@@ -1,16 +1,24 @@
 import subprocess
+import sys
 
 from eulertools.utils import Language, Modes, get_answers_dict, get_solution
 
 
 class Run:
     def __init__(
-        self, language: Language, problem: str, *, times: int = 1, mode: str = Modes.RUN
+        self,
+        language: Language,
+        problem: str,
+        *,
+        debug: bool = False,
+        times: int = 1,
+        mode: str = Modes.RUN,
     ):
         self.language = language
         self.problem = problem
         self.mode = mode
         self.times = times
+        self.debug = debug
 
     def run(self) -> list[int]:
         if self.mode == Modes.TIMING and self.times < 3:
@@ -34,6 +42,9 @@ class Run:
             capture_output=True,
         )
         output = raw_output.stdout.decode()
+        if self.debug:
+            sys.tracebacklimit = 9999
+            print(output)
         timings = [
             int(line[6:]) or 1
             for line in output.splitlines()

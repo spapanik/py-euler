@@ -45,6 +45,7 @@ def parse_args() -> argparse.Namespace:
 
     run_parser = subparsers.add_parser("run")
     language_specific(run_parser)
+    run_parser.add_argument("-d", "--debug", action="store_true")
 
     update_parser = subparsers.add_parser("update")
     language_specific(update_parser)
@@ -85,7 +86,7 @@ def main() -> None:
         case "run":
             language = LANGUAGES[options.language]
             problem = get_problem(options.problem)
-            Run(language, problem).run()
+            Run(language, problem, debug=options.debug).run()
         case "update":
             language = LANGUAGES[options.language]
             problem = get_problem(options.problem)

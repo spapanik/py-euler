@@ -12,7 +12,6 @@ class Generate:
         self.force = force
 
     def run(self) -> None:
-
         solution = get_solution(self.language, self.problem)
         if solution.exists() and not self.force:
             raise FileExistsError("Solution already exists. Aborting...")
