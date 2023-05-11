@@ -2,7 +2,7 @@ import os
 from math import ceil, floor
 
 from eulertools.run import Run
-from eulertools.utils import ANSIEscape, Modes, Language, get_timings
+from eulertools.utils import ANSIEscape, Language, Modes, get_timings
 
 
 class Test:

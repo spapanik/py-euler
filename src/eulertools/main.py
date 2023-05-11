@@ -102,14 +102,10 @@ def main() -> None:
                 print_report=options.report,
             ).run()
         case "benchmark":
-            languages = [
-                LANGUAGES[language] for language in sorted(options.languages)
-            ]
+            languages = [LANGUAGES[language] for language in sorted(options.languages)]
             Benchmark(languages, options.times).run()
         case "compare":
-            languages = [
-                LANGUAGES[language] for language in sorted(options.languages)
-            ]
+            languages = [LANGUAGES[language] for language in sorted(options.languages)]
             problems = sorted(get_problem(problem) for problem in options.problems)
             Compare(languages, problems).run()
         case "test":

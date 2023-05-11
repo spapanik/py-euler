@@ -1,4 +1,4 @@
-from eulertools.utils import Timing, Language, get_solution, get_timings, update_timings
+from eulertools.utils import Language, Timing, get_solution, get_timings, update_timings
 
 
 class Update:

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import jinja2
 
-from eulertools.utils import Language, get_statement, get_solution, get_template
+from eulertools.utils import Language, get_solution, get_statement, get_template
 
 
 class Generate:
@@ -12,7 +12,6 @@ class Generate:
         self.force = force
 
     def run(self) -> None:
-        extension = self.language.extension
 
         solution = get_solution(self.language, self.problem)
         if solution.exists() and not self.force:

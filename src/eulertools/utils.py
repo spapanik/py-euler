@@ -162,7 +162,8 @@ def get_average(values: list[int]) -> float:
 
 def get_problem(problem: str) -> str:
     settings = get_settings()
-    return settings["problems"]["format"].format(problem=problem)
+    problem_format: str = settings["problems"]["format"]
+    return problem_format.format(problem=problem)
 
 
 def get_statement(problem: str) -> Path:

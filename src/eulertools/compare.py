@@ -41,7 +41,7 @@ class Compare:
 
     @staticmethod
     def transpose(matrix: list[list[str]]) -> list[list[str]]:
-        return [list(row) for row in zip(*matrix)]
+        return [list(row) for row in zip(*matrix, strict=True)]
 
     def padded_print(self, string: str, *, heading: bool) -> str:
         if heading:

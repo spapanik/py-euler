@@ -28,9 +28,8 @@ class TimeIt:
                 f"Problem {self.problem} not solved for {self.language}. Aborting..."
             )
         timings = get_timings(self.language)
-        if old_timing := timings.get(self.problem):
-            if not self.run_update:
-                print(f"Old timing: {old_timing}")
+        if (old_timing := timings.get(self.problem)) and not self.run_update:
+            print(f"Old timing: {old_timing}")
         returned_lines = Run(
             self.language, self.problem, mode="timing", times=self.times
         ).run()
