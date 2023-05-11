@@ -48,22 +48,21 @@ class Run:
             raw_key, value = line.split(maxsplit=1)
             key = int(raw_key[:-1])
             actual_answers[key] = value
+        success = True
         if self.mode == "test" and len(actual_answers) != len(expected_answers):
+            success = False
             print(f"🔴 {prefix} {self.problem}...")
-            raise ValueError(
-                f"Expected {len(expected_answers)} answers, got {len(actual_answers)}"
-            )
         for key, value in actual_answers.items():
-            if self.mode == "run" and key != 1 and value == expected_answers[key]:
-                continue
             if key not in expected_answers:
                 if self.mode != "timing":
                     print(f"🟠 {prefix} {self.problem}/{key}... new response: {value}")
             elif value != expected_answers[key]:
+                success = False
                 print(
                     f"🔴 {prefix} {self.problem}/{key}... expected: {expected_answers[key]}, got: {value}"
                 )
-                raise ValueError("Test failed")
             elif self.mode != "timing":
                 print(f"🟢 {prefix} {self.problem}/{key}... {value}")
+        if not success:
+            raise ValueError(f"{prefix} failed. Aborting...")
         return timings
