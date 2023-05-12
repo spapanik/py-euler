@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from decimal import Decimal
 from enum import StrEnum, unique
@@ -27,7 +26,6 @@ class ANSIEscape(StrEnum):
 class Modes(StrEnum):
     TIMING = "timing"
     RUN = "run"
-    TEST = "test"
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,27 +91,6 @@ class Language:
         )
 
 
-@dataclass(frozen=True, slots=True)
-class Languages:
-    _all: tuple[Language, ...] = field(repr=False)
-    _data: dict[str, Language] = field(init=False, repr=False)
-
-    def __init__(self, languages: tuple[Language, ...]) -> None:
-        object.__setattr__(self, "_all", languages)
-        object.__setattr__(
-            self, "_data", {language.name: language for language in languages}
-        )
-
-    def __len__(self) -> int:
-        return len(self._all)
-
-    def __iter__(self) -> Iterator[Language]:
-        return iter(self._all)
-
-    def __getitem__(self, item: str) -> Language:
-        return self._data[item]
-
-
 def get_project_root() -> Path:
     cwd = Path.cwd().resolve()
     while not cwd.joinpath("leet.toml").exists():
@@ -127,8 +104,8 @@ def get_settings() -> dict[str, Any]:
     return SettingsParser(get_project_root().joinpath("leet.toml")).data
 
 
-def get_answers_dict(problem: str) -> dict[int, str]:
-    answers = get_project_root().joinpath("answers.txt")
+def get_answers(problem: str) -> dict[int, str]:
+    answers = get_project_root().joinpath("common", "answers.txt")
     output: dict[int, str] = {}
     for line in answers.read_text().splitlines():
         if line.startswith(problem):
@@ -160,20 +137,22 @@ def get_average(values: list[int]) -> float:
     return sum(values) // len(values)
 
 
-def get_problem(problem: str) -> str:
-    settings = get_settings()
-    problem_format: str = settings["problems"]["format"]
-    return problem_format.format(problem=problem)
-
-
 def get_statement(problem: str) -> Path:
-    return get_project_root().joinpath("statements", f"{problem}.txt")
+    return get_project_root().joinpath("common", "statements", f"{problem}.txt")
+
+
+def get_signature(language: Language, problem: str) -> str:
+    statement = get_project_root().joinpath("common", "statements", f"{problem}.txt")
+    with statement.open() as file:
+        for line in file.readlines():
+            if line.startswith(f"::{language.name}::"):
+                return line.split("::")[2].strip()
+
+    return ""
 
 
 def get_template(language: Language) -> Path:
-    return get_project_root().joinpath(
-        "templates", f"template.solution.{language.extension}"
-    )
+    return get_project_root().joinpath(language.name, ".leet", "template")
 
 
 def get_solution(language: Language, problem: str) -> Path:
@@ -182,9 +161,35 @@ def get_solution(language: Language, problem: str) -> Path:
     )
 
 
-def get_languages() -> Languages:
-    language_settings = get_settings()["languages"]
-    languages = tuple(
-        Language.from_settings(name) for name in sorted(language_settings)
-    )
-    return Languages(languages)
+def get_context(language: Language, problem: str) -> dict[str, str]:
+    signature = get_signature(language, problem)
+    regex_list = get_settings()["languages"][language.name].get("regex", [])
+    context = {"problem": problem}
+    for regex in regex_list:
+        if regex_match := re.search(regex, signature):
+            context |= regex_match.groupdict()
+    return context
+
+
+def get_all_languages() -> list[str]:
+    languages = get_settings()["languages"]
+    return sorted(languages)
+
+
+def get_all_problems() -> list[str]:
+    statement_dir = get_project_root().joinpath("common", "statements")
+    return sorted(file.stem for file in statement_dir.glob("*.txt"))
+
+
+def filter_languages(parsed_languages: list[str]) -> list[Language]:
+    language_strings = get_all_languages()
+    return [
+        Language.from_settings(language)
+        for language in language_strings
+        if language in parsed_languages
+    ]
+
+
+def filter_problems(parsed_problems: list[str]) -> list[str]:
+    problem_strings = get_all_problems()
+    return [problem for problem in problem_strings if problem in parsed_problems]

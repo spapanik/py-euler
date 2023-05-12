@@ -2,11 +2,16 @@ from eulertools.utils import ANSIEscape, get_statement
 
 
 class Statement:
-    def __init__(self, problem: str):
-        self.problem = problem
+    def __init__(self, problems: list[str]):
+        self.problems = problems
 
     def run(self) -> None:
-        statement = get_statement(self.problem)
+        for problem in self.problems:
+            self.show_statement(problem)
+
+    @staticmethod
+    def show_statement(problem: str) -> None:
+        statement = get_statement(problem)
         if not statement.exists():
             raise FileNotFoundError("No problem description found. Aborting...")
 

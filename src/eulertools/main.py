@@ -1,118 +1,104 @@
 import argparse
 import sys
 
-from eulertools.benchmark import Benchmark
+from eulertools.__version__ import __version__
 from eulertools.compare import Compare
 from eulertools.generate import Generate
 from eulertools.run import Run
 from eulertools.statement import Statement
-from eulertools.test import Test
-from eulertools.timeit import TimeIt
-from eulertools.update import Update
-from eulertools.utils import get_languages, get_problem
+from eulertools.time import Time
+from eulertools.utils import (
+    filter_languages,
+    filter_problems,
+    get_all_languages,
+    get_all_problems,
+)
 
 sys.tracebacklimit = 0
-LANGUAGES = get_languages()
-
-
-def valid_languages() -> set[str]:
-    return {language.name for language in LANGUAGES}
+LANGUAGES = get_all_languages()
+PROBLEMS = get_all_problems()
 
 
 def language_specific(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("language", choices=valid_languages())
-    parser.add_argument("problem")
-
-
-def multilanguage(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "-l",
-        "--language",
-        nargs="*",
-        dest="languages",
-        choices=valid_languages(),
-        default=valid_languages(),
+        "-l", "--language", nargs="*", dest="languages", default=LANGUAGES
     )
 
 
+def problem_specific(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("-p", "--problem", nargs="*", dest="problems", default=PROBLEMS)
+
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog="eulertools", description="Competitive programming CLI"
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="print the version and exit",
+    )
+
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        dest="verbosity",
+        help="increase the level of verbosity",
+    )
+
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    generate_parser = subparsers.add_parser("generate")
+    generate_parser = subparsers.add_parser("generate", parents=[parent_parser])
     language_specific(generate_parser)
-    generate_parser.add_argument("-f", "--force", action="store_true")
+    problem_specific(generate_parser)
 
-    run_parser = subparsers.add_parser("run")
+    run_parser = subparsers.add_parser("run", parents=[parent_parser])
     language_specific(run_parser)
-    run_parser.add_argument("-d", "--debug", action="store_true")
+    problem_specific(run_parser)
 
-    update_parser = subparsers.add_parser("update")
-    language_specific(update_parser)
-    update_parser.add_argument("timing")
+    time_parser = subparsers.add_parser("time", parents=[parent_parser])
+    language_specific(time_parser)
+    problem_specific(time_parser)
+    time_parser.add_argument("-t", "--times", type=int, default=10)
+    time_parser.add_argument("-u", "--update", action="store_true")
 
-    timeit_parser = subparsers.add_parser("timeit")
-    language_specific(timeit_parser)
-    timeit_parser.add_argument("-u", "--update", action="store_true")
-    timeit_parser.add_argument("-q", "--quiet", action="store_true")
-    timeit_parser.add_argument("-r", "--report", action="store_true")
-    timeit_parser.add_argument("-t", "--times", type=int, default=10)
+    compare_parser = subparsers.add_parser("compare", parents=[parent_parser])
+    language_specific(compare_parser)
+    problem_specific(compare_parser)
 
-    benchmark_parser = subparsers.add_parser("benchmark")
-    multilanguage(benchmark_parser)
-    benchmark_parser.add_argument("-t", "--times", type=int, default=10)
-
-    compare_parser = subparsers.add_parser("compare")
-    multilanguage(compare_parser)
-    compare_parser.add_argument("problems", nargs="+")
-
-    test_parser = subparsers.add_parser("test")
-    test_parser.add_argument("language", choices=valid_languages())
-    test_parser.add_argument("problems", nargs="*")
-
-    statement_parser = subparsers.add_parser("statement")
-    statement_parser.add_argument("problem")
+    statement_parser = subparsers.add_parser("statement", parents=[parent_parser])
+    problem_specific(statement_parser)
 
     return parser.parse_args()
 
 
 def main() -> None:
     options = parse_args()
+    if options.verbosity > 0:
+        sys.tracebacklimit = 9999
+    options.languages = (
+        filter_languages(options.languages) if hasattr(options, "languages") else []
+    )
+    options.problems = filter_problems(options.problems)
     match options.command:
         case "generate":
-            language = LANGUAGES[options.language]
-            problem = get_problem(options.problem)
-            Generate(language, problem, force=options.force).run()
+            Generate(options.languages, options.problems).run()
         case "run":
-            language = LANGUAGES[options.language]
-            problem = get_problem(options.problem)
-            Run(language, problem, debug=options.debug).run()
-        case "update":
-            language = LANGUAGES[options.language]
-            problem = get_problem(options.problem)
-            Update(language, problem, options.timing).run()
-        case "timeit":
-            language = LANGUAGES[options.language]
-            problem = get_problem(options.problem)
-            TimeIt(
-                language,
-                problem,
+            Run(options.languages, options.problems, options.verbosity).run()
+        case "time":
+            Time(
+                options.languages,
+                options.problems,
                 options.times,
+                options.verbosity,
                 run_update=options.update,
-                quiet=options.quiet,
-                print_report=options.report,
             ).run()
-        case "benchmark":
-            languages = [LANGUAGES[language] for language in sorted(options.languages)]
-            Benchmark(languages, options.times).run()
         case "compare":
-            languages = [LANGUAGES[language] for language in sorted(options.languages)]
-            problems = sorted(get_problem(problem) for problem in options.problems)
-            Compare(languages, problems).run()
-        case "test":
-            language = LANGUAGES[options.language]
-            problems = sorted(get_problem(problem) for problem in options.problems)
-            Test(language, problems).run()
+            Compare(options.languages, options.problems).run()
         case "statement":
-            problem = get_problem(options.problem)
-            Statement(problem).run()
+            Statement(options.problems).run()

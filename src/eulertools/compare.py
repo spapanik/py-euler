@@ -15,6 +15,8 @@ class Compare:
         self.print_table(self.transpose(matrix))
 
     def print_table(self, matrix: list[list[str]]) -> None:
+        if len(matrix) == 1:
+            raise ValueError("No data to print")
         n = len(self.languages) + 1
         spacing = ["─" * self.pad_length for _ in range(n)]
         top = "┌" + "┬".join(spacing) + "┐"
@@ -41,7 +43,8 @@ class Compare:
 
     @staticmethod
     def transpose(matrix: list[list[str]]) -> list[list[str]]:
-        return [list(row) for row in zip(*matrix, strict=True)]
+        new_lines = (list(row) for row in zip(*matrix, strict=True))
+        return [line for line in new_lines if any(item != "N/A" for item in line[1:])]
 
     def padded_print(self, string: str, *, heading: bool) -> str:
         if heading:

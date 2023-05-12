@@ -2,27 +2,36 @@ from pathlib import Path
 
 import jinja2
 
-from eulertools.utils import Language, get_solution, get_statement, get_template
+from eulertools.utils import (
+    Language,
+    get_context,
+    get_solution,
+    get_statement,
+    get_template,
+)
 
 
 class Generate:
-    def __init__(self, language: Language, problem: str, *, force: bool = False):
-        self.language = language
-        self.problem = problem
-        self.force = force
+    def __init__(self, languages: list[Language], problems: list[str]):
+        self.languages = languages
+        self.problems = problems
 
     def run(self) -> None:
-        solution = get_solution(self.language, self.problem)
-        if solution.exists() and not self.force:
-            raise FileExistsError("Solution already exists. Aborting...")
-        template = get_template(self.language)
+        for problem in self.problems:
+            statement = get_statement(problem)
+            if not statement.exists():
+                raise FileNotFoundError("No problem description found. Aborting...")
 
-        statement = get_statement(self.problem)
-        if not statement.exists():
-            raise FileNotFoundError("No problem description found. Aborting...")
+            for language in self.languages:
+                self.generate_solution(language, problem)
 
-        context = self.get_context(self.problem)
-        self.generate(template, solution, context)
+    def generate_solution(self, language: Language, problem: str) -> None:
+        template = get_template(language)
+        solution = get_solution(language, problem)
+        if get_solution(language, problem).exists():
+            return
+
+        self.generate(template, solution, get_context(language, problem))
 
     @staticmethod
     def generate(
@@ -30,7 +39,3 @@ class Generate:
     ) -> None:
         template = jinja2.Template(template_path.read_text())
         output_path.write_text(template.render(**context))
-
-    @staticmethod
-    def get_context(padded_number: str) -> dict[str, str]:
-        return {"padded_number": padded_number}
