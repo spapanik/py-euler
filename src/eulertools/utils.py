@@ -81,7 +81,7 @@ class Language:
 
     @classmethod
     def from_settings(cls, name: str) -> Self:
-        project_root = get_project_root()
+        project_root = _get_project_root()
         settings = get_settings()
         language = settings["languages"][name]
         return cls(
@@ -91,7 +91,7 @@ class Language:
         )
 
 
-def get_project_root() -> Path:
+def _get_project_root() -> Path:
     cwd = Path.cwd().resolve()
     while not cwd.joinpath("leet.toml").exists():
         if cwd.as_posix() == "/":
@@ -100,12 +100,65 @@ def get_project_root() -> Path:
     return cwd
 
 
+def _get_settings() -> Path:
+    return _get_project_root().joinpath("leet.toml")
+
+
+def _get_answers() -> Path:
+    return _get_project_root().joinpath("common", "answers.txt")
+
+
+def _get_timings(language: Language) -> Path:
+    return _get_project_root().joinpath(language.name, ".leet", "timings.txt")
+
+
+def _get_statements_dir() -> Path:
+    return _get_project_root().joinpath("common", "statements")
+
+
+def _get_statement(problem: str) -> Path:
+    statement = _get_statements_dir().joinpath(f"{problem}.txt")
+    if not statement.exists():
+        raise FileNotFoundError("No problem description found. Aborting...")
+
+    return statement
+
+
+def get_template(language: Language) -> Path:
+    return _get_project_root().joinpath(language.name, ".leet", "solution.jinja")
+
+
+def get_solution(language: Language, problem: str) -> Path:
+    return _get_project_root().joinpath(
+        language.name, "src", "solutions", f"{problem}.{language.extension}"
+    )
+
+
+def get_statement(problem: str) -> dict[str, list[str]]:
+    output: dict[str, list[str]] = {
+        "title": [],
+        "description": [],
+    }
+    title = True
+    for line in _get_statement(problem).read_text().splitlines():
+        if line.startswith("::"):
+            _, language, path = line.split("::")
+            output[language.strip()] = [path.strip()]
+        elif title:
+            output["title"] = [line.strip()]
+            title = False
+        else:
+            output["description"].append(line.strip())
+
+    return output
+
+
 def get_settings() -> dict[str, Any]:
-    return SettingsParser(get_project_root().joinpath("leet.toml")).data
+    return SettingsParser(_get_settings()).data
 
 
 def get_answers(problem: str) -> dict[int, str]:
-    answers = get_project_root().joinpath("common", "answers.txt")
+    answers = _get_answers()
     output: dict[int, str] = {}
     for line in answers.read_text().splitlines():
         if line.startswith(problem):
@@ -115,7 +168,7 @@ def get_answers(problem: str) -> dict[int, str]:
 
 
 def get_timings(language: Language) -> dict[str, Timing]:
-    timings = get_project_root().joinpath(language.name, "timings.txt")
+    timings = _get_timings(language)
     output: dict[str, Timing] = {}
     for line in timings.read_text().splitlines():
         problem, timing = line.split(maxsplit=1)
@@ -123,8 +176,24 @@ def get_timings(language: Language) -> dict[str, Timing]:
     return output
 
 
+def get_context(language: Language, problem: str) -> dict[str, str]:
+    statement = get_statement(problem)
+    parser = get_settings()["languages"][language.name].get("parser", {})
+    context = {"problem": problem, "title": statement["title"][0]}
+
+    try:
+        signature = statement[language.name][0]
+    except KeyError:
+        return context
+
+    for name, regex in parser.items():
+        if regex_match := re.findall(regex["regex"], signature):
+            context |= {name: regex.get("join", "").join(regex_match)}
+    return context
+
+
 def update_timings(language: Language, timings: dict[str, Timing]) -> None:
-    timings_path = get_project_root().joinpath(language.name, "timings.txt")
+    timings_path = _get_timings(language)
     with timings_path.open("w") as file:
         for key in sorted(timings):
             timing = timings[key]
@@ -137,47 +206,13 @@ def get_average(values: list[int]) -> float:
     return sum(values) // len(values)
 
 
-def get_statement(problem: str) -> Path:
-    return get_project_root().joinpath("common", "statements", f"{problem}.txt")
-
-
-def get_signature(language: Language, problem: str) -> str:
-    statement = get_project_root().joinpath("common", "statements", f"{problem}.txt")
-    with statement.open() as file:
-        for line in file.readlines():
-            if line.startswith(f"::{language.name}::"):
-                return line.split("::")[2].strip()
-
-    return ""
-
-
-def get_template(language: Language) -> Path:
-    return get_project_root().joinpath(language.name, ".leet", "template")
-
-
-def get_solution(language: Language, problem: str) -> Path:
-    return get_project_root().joinpath(
-        language.name, "src", "solutions", f"{problem}.{language.extension}"
-    )
-
-
-def get_context(language: Language, problem: str) -> dict[str, str]:
-    signature = get_signature(language, problem)
-    regex_list = get_settings()["languages"][language.name].get("regex", [])
-    context = {"problem": problem}
-    for regex in regex_list:
-        if regex_match := re.search(regex, signature):
-            context |= regex_match.groupdict()
-    return context
-
-
 def get_all_languages() -> list[str]:
     languages = get_settings()["languages"]
     return sorted(languages)
 
 
 def get_all_problems() -> list[str]:
-    statement_dir = get_project_root().joinpath("common", "statements")
+    statement_dir = _get_statements_dir()
     return sorted(file.stem for file in statement_dir.glob("*.txt"))
 
 

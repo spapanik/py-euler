@@ -5,7 +5,7 @@ class Compare:
     def __init__(self, languages: list[Language], problems: list[str]):
         self.languages = languages
         self.problems = problems
-        self.pad_length = max(max(len(language.name) for language in languages), 9)
+        self.pad_length = max((len(language.name) for language in languages), 9)
 
     def run(self) -> None:
         matrix = [

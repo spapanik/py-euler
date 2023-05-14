@@ -2,13 +2,7 @@ from pathlib import Path
 
 import jinja2
 
-from eulertools.utils import (
-    Language,
-    get_context,
-    get_solution,
-    get_statement,
-    get_template,
-)
+from eulertools.utils import Language, get_context, get_solution, get_template
 
 
 class Generate:
@@ -18,10 +12,6 @@ class Generate:
 
     def run(self) -> None:
         for problem in self.problems:
-            statement = get_statement(problem)
-            if not statement.exists():
-                raise FileNotFoundError("No problem description found. Aborting...")
-
             for language in self.languages:
                 self.generate_solution(language, problem)
 
