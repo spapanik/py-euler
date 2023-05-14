@@ -1,15 +1,18 @@
-from eulertools.utils import Language, get_timings
+from itertools import chain
+
+from eulertools.utils import Language, get_all_keyed_problems, get_timings
 
 
 class Compare:
     def __init__(self, languages: list[Language], problems: list[str]):
         self.languages = languages
-        self.problems = problems
-        self.pad_length = max((len(language.name) for language in languages), 9)
+        self.timings = {language: get_timings(language) for language in languages}
+        self.keyed_problems = self.get_keyed_problems(languages, problems)
+        self.pad_length = self._pad_length()
 
     def run(self) -> None:
         matrix = [
-            ["problem", *self.problems],
+            ["problem", *(f"{problem}/{key}" for problem, key in self.keyed_problems)],
             *(self.get_language_timings(language) for language in self.languages),
         ]
         self.print_table(self.transpose(matrix))
@@ -38,7 +41,10 @@ class Compare:
         timings = get_timings(language)
         return [
             language.name,
-            *(str(timings.get(problem, "N/A")) for problem in self.problems),
+            *(
+                str(timings.get(problem, {}).get(key, "N/A"))
+                for problem, key in self.keyed_problems
+            ),
         ]
 
     @staticmethod
@@ -50,3 +56,25 @@ class Compare:
         if heading:
             return string.center(self.pad_length)
         return string.rjust(self.pad_length)
+
+    def get_keyed_problems(
+        self, languages: list[Language], problems: list[str]
+    ) -> list[tuple[str, int]]:
+        return [
+            (problem, key)
+            for problem, key in get_all_keyed_problems()
+            if any(
+                problem_key
+                for language in languages
+                for problem_key in self.timings[language].get(problem, {})
+            )
+            and problem in problems
+        ]
+
+    def _pad_length(self) -> int:
+        lengths = chain(
+            (len(problem) + len(str(key)) for problem, key in self.keyed_problems),
+            (len(language.name) for language in self.languages),
+            [len("problem")],
+        )
+        return max(lengths) + 2

@@ -20,39 +20,48 @@ class Run:
         self.times = times
         self.verbosity = verbosity
 
-    def run(self) -> None:
+    def run(self) -> dict[Language, dict[str, dict[int, list[int]]]]:
+        output: dict[Language, dict[str, dict[int, list[int]]]] = {}
         for language, problem in product(self.languages, self.problems):
-            self.run_single_problem(language, problem)
+            timings = self.run_single_problem(language, problem)
+            if timings is not None:
+                output.setdefault(language, {})[problem] = timings
+        return output
 
-    def run_single_problem(self, language: Language, problem: str) -> list[int] | None:
+    def run_single_problem(
+        self, language: Language, problem: str
+    ) -> dict[int, list[int]] | None:
         solution = get_solution(language, problem)
         if not solution.exists():
             return None
         raw_output = subprocess.run(
-            [language.runner, problem, self.mode, str(self.times)],  # noqa: S603
+            [language.runner, problem, str(self.times)],  # noqa: S603
             capture_output=True,
         )
         output = raw_output.stdout.decode()
         if self.verbosity > 3:
             print(output)
-        timings = [
-            int(line[6:]) or 1
-            for line in output.splitlines()
-            if line.startswith("Time: ")
-        ]
+        actual_answers: dict[int, set[str]] = {}
+        timings: dict[int, list[int]] = {}
+        for line in output.splitlines():
+            output_type, run_id, value = line.split(maxsplit=2)
+            key = int(run_id)
+            if output_type == "Time":
+                timings.setdefault(key, []).append(int(value) or 1)
+            elif output_type == "Answer":
+                actual_answers.setdefault(key, set()).add(value)
         expected_answers = get_answers(problem)
-        actual_answers: dict[int, str] = {}
-        for line in output.strip().splitlines():
-            if line.startswith("Time: "):
-                continue
-            raw_key, value = line.split(maxsplit=1)
-            key = int(raw_key[:-1])
-            actual_answers[key] = value
         success = True
         if self.mode != Modes.TIMING and len(actual_answers) != len(expected_answers):
             success = False
-            print(f"🔴 Running {problem}...")
-        for key, value in actual_answers.items():
+            print(f"🔴 Running {problem}... Not the expected number of answers.")
+        for key, values in actual_answers.items():
+            if len(values) != 1:
+                success = False
+                print(
+                    f"🔴 Running {language.name}/{problem}/{key}... Not deterministic answer."
+                )
+            value = values.pop()
             if key not in expected_answers:
                 if self.mode != Modes.TIMING:
                     print(

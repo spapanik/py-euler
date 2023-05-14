@@ -32,45 +32,27 @@ class Modes(StrEnum):
 class Timing:
     time: Decimal
     unit: str
+    nanoseconds: int = field(repr=False, compare=False)
 
     @classmethod
-    def from_string(cls, timing: str, old_timing: Timing | None = None) -> Self:
-        match = re.match(TIME_UNIT, timing)
-        if match is None:
-            raise ValueError(f"Invalid timing: {timing}")
-        time, unit = match.groups()
-        if not unit:
-            if old_timing is None:
-                raise ValueError("Missing unit in initial timing")
-            unit = old_timing.unit
-        if unit == "us":
-            unit = "µs"
-        return cls(time=Decimal(time), unit=unit)
-
-    @classmethod
-    def from_nanoseconds(cls, nanoseconds: float) -> Self:
+    def from_nanoseconds(cls, nanoseconds: int) -> Self:
         if nanoseconds < 1000:
-            return cls.from_string(f"{nanoseconds:.0f}ns")
+            return cls(time=Decimal(nanoseconds), unit="ns", nanoseconds=nanoseconds)
         microseconds = nanoseconds / 1000
         if microseconds < 1000:
-            return cls.from_string(f"{microseconds:.1f}µs")
+            return cls(
+                time=Decimal(f"{microseconds:.1f}"), unit="µs", nanoseconds=nanoseconds
+            )
         milliseconds = microseconds / 1000
         if milliseconds < 1000:
-            return cls.from_string(f"{milliseconds:.1f}ms")
+            return cls(
+                time=Decimal(f"{milliseconds:.1f}"), unit="ms", nanoseconds=nanoseconds
+            )
         seconds = milliseconds / 1000
-        return cls.from_string(f"{seconds:.2f}s")
-
-    def to_nanoseconds(self) -> int:
-        if self.unit == "ns":
-            return int(self.time)
-        if self.unit == "µs":
-            return int(self.time * 1000)
-        if self.unit == "ms":
-            return int(self.time * 1000 * 1000)
-        return int(self.time * 1000 * 1000 * 1000)
+        return cls(time=Decimal(f"{seconds:.2f}"), unit="s", nanoseconds=nanoseconds)
 
     def __str__(self) -> str:
-        return f"{self.time} {self.unit}"
+        return f"{self.time}{self.unit}"
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -163,16 +145,16 @@ def get_answers(problem: str) -> dict[int, str]:
     for line in answers.read_text().splitlines():
         if line.startswith(problem):
             problem_part, mode_id, answer = line.split(maxsplit=2)
-            output[int(mode_id[:-1])] = answer
+            output[int(mode_id)] = answer
     return output
 
 
-def get_timings(language: Language) -> dict[str, Timing]:
+def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
     timings = _get_timings(language)
-    output: dict[str, Timing] = {}
+    output: dict[str, dict[int, Timing]] = {}
     for line in timings.read_text().splitlines():
-        problem, timing = line.split(maxsplit=1)
-        output[problem] = Timing.from_string(timing)
+        problem, key, timing = line.split()
+        output.setdefault(problem, {})[int(key)] = Timing.from_nanoseconds(int(timing))
     return output
 
 
@@ -192,15 +174,16 @@ def get_context(language: Language, problem: str) -> dict[str, str]:
     return context
 
 
-def update_timings(language: Language, timings: dict[str, Timing]) -> None:
+def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) -> None:
     timings_path = _get_timings(language)
     with timings_path.open("w") as file:
-        for key in sorted(timings):
-            timing = timings[key]
-            file.write(" ".join([key, str(timing.time), timing.unit]) + "\n")
+        for problem in sorted(timings):
+            for key in sorted(timings[problem]):
+                timing = timings[problem][key]
+                file.write(f"{problem} {key} {timing.nanoseconds}\n")
 
 
-def get_average(values: list[int]) -> float:
+def get_average(values: list[int]) -> int:
     if len(values) >= 3:
         values = sorted(values)[1:-1]
     return sum(values) // len(values)
@@ -214,6 +197,13 @@ def get_all_languages() -> list[str]:
 def get_all_problems() -> list[str]:
     statement_dir = _get_statements_dir()
     return sorted(file.stem for file in statement_dir.glob("*.txt"))
+
+
+def get_all_keyed_problems() -> list[tuple[str, int]]:
+    output = [
+        (problem, key) for problem in get_all_problems() for key in get_answers(problem)
+    ]
+    return sorted(output)
 
 
 def filter_languages(parsed_languages: list[str]) -> list[Language]:

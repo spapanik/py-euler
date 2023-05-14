@@ -34,42 +34,41 @@ class Time:
             self.time_single_problem(language, problem)
 
     def time_single_problem(self, language: Language, problem: str) -> None:
+        self.timings[language].setdefault(problem, {})
         solution = get_solution(language, problem)
         if not solution.exists():
             return
 
-        if (old_timing := self.timings[language].get(problem)) and not self.run_update:
-            print(f"Old timing: {old_timing}")
-        returned_lines = Run(
+        raw_timings = Run(
             [language],
             [problem],
             verbosity=self.verbosity,
             mode=Modes.TIMING,
             times=self.times,
-        ).run_single_problem(language, problem)
-        if not returned_lines:
+        ).run()[language][problem]
+        if not raw_timings:
             raise ValueError("No lines returned from Run.")
-        average = Timing.from_nanoseconds(get_average(returned_lines))
-        if self.verbosity > 0:
-            print("New timings:")
-            for i, returned_line in enumerate(returned_lines):
-                print(f"* Run {i + 1} took: {Timing.from_nanoseconds(returned_line)}")
-        if self.run_update:
-            self.update(language, problem, str(average))
-        else:
-            print(f"New timing: {average}")
-        if self.verbosity > 1 and old_timing is not None:
-            old_nanosecond = old_timing.to_nanoseconds()
-            new_nanosecond = average.to_nanoseconds()
-            change = 100 * (old_nanosecond - new_nanosecond) / old_nanosecond
-            print(f"Performance difference: {change:.2f}%")
-
-    def update(self, language: Language, problem: str, average: str) -> None:
-        old_timing = self.timings[language].get(problem)
-        new_timing = Timing.from_string(average, old_timing)
-        self.timings[language][problem] = new_timing
-        if old_timing is None:
-            print(f"Initial timing: {new_timing}")
-        else:
-            print(f"Old timing: {old_timing}\nNew timing: {new_timing}")
-        update_timings(language, self.timings[language])
+        old_timings = self.timings[language][problem]
+        new_timings = {
+            run_id: Timing.from_nanoseconds(get_average(timings))
+            for run_id, timings in raw_timings.items()
+        }
+        for key in sorted(new_timings):
+            old_timing = old_timings.get(key)
+            raw_timing = raw_timings[key]
+            new_timing = new_timings[key]
+            self.timings[language][problem][key] = new_timing
+            print(f"Old timing: {old_timing}")
+            if self.verbosity > 0:
+                print("New timings:")
+                for i, timing in enumerate(raw_timing):
+                    print(f"* Run {i + 1} took: {Timing.from_nanoseconds(timing)}")
+            if self.run_update:
+                update_timings(language, self.timings[language])
+            prefix = "New" if old_timing is not None else "Initial"
+            print(f"{prefix} timing: {new_timing}")
+            if self.verbosity > 1 and old_timing is not None:
+                old_nanoseconds = old_timing.nanoseconds
+                new_nanoseconds = new_timing.nanoseconds
+                change = 100 * (old_nanoseconds - new_nanoseconds) / old_nanoseconds
+                print(f"Performance difference: {change:.2f}%")
