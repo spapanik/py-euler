@@ -22,18 +22,22 @@ class Run:
 
     def run(self) -> dict[Language, dict[str, dict[int, list[int]]]]:
         output: dict[Language, dict[str, dict[int, list[int]]]] = {}
+        success = True
         for language, problem in product(self.languages, self.problems):
-            timings = self.run_single_problem(language, problem)
-            if timings is not None:
+            run_success, timings = self.run_single_problem(language, problem)
+            if run_success is not None:
+                success = success and run_success
                 output.setdefault(language, {})[problem] = timings
+        if not success:
+            raise RuntimeError("Some tests failed")
         return output
 
     def run_single_problem(
         self, language: Language, problem: str
-    ) -> dict[int, list[int]] | None:
+    ) -> tuple[bool | None, dict[int, list[int]]]:
         solution = get_solution(language, problem)
         if not solution.exists():
-            return None
+            return None, {}
         raw_output = subprocess.run(
             [language.runner, problem, str(self.times)],  # noqa: S603
             capture_output=True,
@@ -74,6 +78,4 @@ class Run:
                 )
             elif self.mode != Modes.TIMING:
                 print(f"🟢 Running {language.name}/{problem}/{key}... {value}")
-        if not success:
-            raise ValueError("Running failed. Aborting...")
-        return timings
+        return success, timings
