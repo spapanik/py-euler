@@ -2,16 +2,21 @@ from eulertools.utils import ANSIEscape, get_statement
 
 
 class Statement:
-    def __init__(self, problems: list[str]):
+    def __init__(self, problems: list[str], *, show_hints: bool):
         self.problems = problems
+        self.show_hints = show_hints
 
     def run(self) -> None:
         for problem in self.problems:
             self.show_statement(problem)
 
-    @staticmethod
-    def show_statement(problem: str) -> None:
+    def show_statement(self, problem: str) -> None:
         statement = get_statement(problem)["common"]
         print(ANSIEscape.OKGREEN, statement["title"], ANSIEscape.ENDC, sep="")
         print(ANSIEscape.OKGREEN, "~" * len(statement["title"]), ANSIEscape.ENDC, sep="")
         print(statement["description"].strip())
+        if self.show_hints and (hint := statement.get("hint")):
+            print("")
+            print(ANSIEscape.OKBLUE, "Hint", ANSIEscape.ENDC, sep="")
+            print(ANSIEscape.OKBLUE, "~" * len("Hint"), ANSIEscape.ENDC, sep="")
+            print(hint.strip())

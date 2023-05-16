@@ -73,6 +73,7 @@ def parse_args() -> argparse.Namespace:
 
     statement_parser = subparsers.add_parser("statement", parents=[parent_parser])
     problem_specific(statement_parser)
+    statement_parser.add_argument("-H", "--hide-hints", dest="show_hints", action="store_false")
 
     return parser.parse_args()
 
@@ -101,4 +102,4 @@ def main() -> None:
         case "compare":
             Compare(options.languages, options.problems).run()
         case "statement":
-            Statement(options.problems).run()
+            Statement(options.problems, show_hints=options.show_hints).run()
