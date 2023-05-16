@@ -11,10 +11,7 @@ class Statement:
 
     @staticmethod
     def show_statement(problem: str) -> None:
-        statement = get_statement(problem)
-        for line in statement["title"]:
-            print(ANSIEscape.OKGREEN, line, ANSIEscape.ENDC, sep="")
-            print(ANSIEscape.OKGREEN, "~" * len(line), ANSIEscape.ENDC, sep="")
-
-        for line in statement["description"]:
-            print(line)
+        statement = get_statement(problem)["common"]
+        print(ANSIEscape.OKGREEN, statement["title"], ANSIEscape.ENDC, sep="")
+        print(ANSIEscape.OKGREEN, "~" * len(statement["title"]), ANSIEscape.ENDC, sep="")
+        print(statement["description"].strip())

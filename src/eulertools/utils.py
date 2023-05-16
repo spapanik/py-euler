@@ -99,7 +99,7 @@ def _get_statements_dir() -> Path:
 
 
 def _get_statement(problem: str) -> Path:
-    statement = _get_statements_dir().joinpath(f"{problem}.txt")
+    statement = _get_statements_dir().joinpath(f"{problem}.toml")
     if not statement.exists():
         raise FileNotFoundError("No problem description found. Aborting...")
 
@@ -116,23 +116,8 @@ def get_solution(language: Language, problem: str) -> Path:
     )
 
 
-def get_statement(problem: str) -> dict[str, list[str]]:
-    output: dict[str, list[str]] = {
-        "title": [],
-        "description": [],
-    }
-    title = True
-    for line in _get_statement(problem).read_text().splitlines():
-        if line.startswith("::"):
-            _, language, path = line.split("::")
-            output[language.strip()] = [path.strip()]
-        elif title:
-            output["title"] = [line.strip()]
-            title = False
-        else:
-            output["description"].append(line.strip())
-
-    return output
+def get_statement(problem: str) -> dict[str, Any]:
+    return SettingsParser(_get_statement(problem)).data
 
 
 def get_settings() -> dict[str, Any]:
@@ -160,18 +145,12 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
 
 def get_context(language: Language, problem: str) -> dict[str, str]:
     statement = get_statement(problem)
-    parser = get_settings()["languages"][language.name].get("parser", {})
-    context = {"problem": problem, "title": statement["title"][0]}
-
-    try:
-        signature = statement[language.name][0]
-    except KeyError:
-        return context
-
-    for name, regex in parser.items():
-        if regex_match := re.findall(regex["regex"], signature):
-            context |= {name: regex.get("join", "").join(regex_match)}
-    return context
+    return {
+        "problem": problem,
+        "title": statement["common"].get("title", ""),
+        "method": statement["common"].get("method", ""),
+        "args": statement.get(language.name, {}).get("args", ""),
+    }
 
 
 def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) -> None:
@@ -196,7 +175,7 @@ def get_all_languages() -> list[str]:
 
 def get_all_problems() -> list[str]:
     statement_dir = _get_statements_dir()
-    return sorted(file.stem for file in statement_dir.glob("*.txt"))
+    return sorted(file.stem for file in statement_dir.iterdir())
 
 
 def get_all_keyed_problems() -> list[tuple[str, int]]:
