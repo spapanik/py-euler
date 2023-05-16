@@ -73,7 +73,9 @@ def parse_args() -> argparse.Namespace:
 
     statement_parser = subparsers.add_parser("statement", parents=[parent_parser])
     problem_specific(statement_parser)
-    statement_parser.add_argument("-H", "--hide-hints", dest="show_hints", action="store_false")
+    statement_parser.add_argument(
+        "-H", "--hide-hints", dest="show_hints", action="store_false"
+    )
 
     return parser.parse_args()
 

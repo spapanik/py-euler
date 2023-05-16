@@ -21,5 +21,7 @@ class Generate:
         if solution.exists():
             return
 
-        template = jinja2.Template(template_path.read_text(), keep_trailing_newline=True)
+        template = jinja2.Template(
+            template_path.read_text(), keep_trailing_newline=True
+        )
         solution.write_text(template.render(context))
