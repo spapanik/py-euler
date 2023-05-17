@@ -150,6 +150,7 @@ def get_context(language: Language, problem: str) -> dict[str, str]:
         "title": statement["common"].get("title", ""),
         "method": statement["common"].get("method", ""),
         "args": statement.get(language.name, {}).get("args", ""),
+        "rtype": statement.get(language.name, {}).get("rtype", ""),
     }
 
 
