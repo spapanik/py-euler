@@ -14,9 +14,7 @@ class Statement:
         statement = get_statement(problem)["common"]
         if title := statement.get("title", ""):
             print(ANSIEscape.OKGREEN, title, ANSIEscape.ENDC, sep="")
-            print(
-                ANSIEscape.OKGREEN, "~" * len(title), ANSIEscape.ENDC, sep=""
-            )
+            print(ANSIEscape.OKGREEN, "~" * len(title), ANSIEscape.ENDC, sep="")
         print(statement["description"].strip())
         if self.show_hints and (hint := statement.get("hint")):
             print("")

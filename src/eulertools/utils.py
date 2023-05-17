@@ -119,9 +119,7 @@ def get_template(language: Language) -> Path:
 
 
 def get_solution(language: Language, problem: str) -> Path:
-    return language.path.joinpath(
-        "src", "solutions", f"{problem}.{language.extension}"
-    )
+    return language.path.joinpath("src", "solutions", f"{problem}.{language.extension}")
 
 
 def get_statement(problem: str) -> dict[str, Any]:
