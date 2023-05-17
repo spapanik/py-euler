@@ -9,6 +9,8 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 `Unreleased`_
 -------------
 
+`0.8.0`_ - 2023-05-17
+---------------------
 Added
 ^^^^^
 * Allow adding the return type in statements

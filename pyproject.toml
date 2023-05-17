@@ -102,7 +102,7 @@ skip_empty = true
 
 [tool.poetry]
 name = "eulertools"
-version = "0.7.0"
+version = "0.8.0"
 description = "Multilanguage competitive coding toolbox"
 authors = [
     "Stephanos Kuma <stephanos@kuma.ai>",
@@ -117,7 +117,7 @@ documentation = "https://eulertools.readthedocs.io/en/latest/"
 
 keywords = ["leetcode", "topcoder", "project_euler"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Operating System :: OS Independent",
 ]
 
