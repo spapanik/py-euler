@@ -58,7 +58,8 @@ class Timing:
 @dataclass(frozen=True, slots=True, order=True)
 class Language:
     name: str
-    extension: str
+    extension: str = field(repr=False, compare=False)
+    path: Path = field(repr=False, compare=False)
     runner: Path = field(repr=False, compare=False)
 
     @classmethod
@@ -69,6 +70,7 @@ class Language:
         return cls(
             name=name,
             extension=language["extension"],
+            path=project_root.joinpath(language.get("path", name)),
             runner=project_root.joinpath(language["runner"]),
         )
 
@@ -94,7 +96,7 @@ def _get_answers() -> Path:
 
 
 def _get_timings(language: Language) -> Path:
-    file = _get_project_root().joinpath(language.name, ".leet", "timings.txt")
+    file = language.path.joinpath(".leet", "timings.txt")
     if not file.exists():
         file.touch(mode=0o644)
     return file
@@ -113,12 +115,12 @@ def _get_statement(problem: str) -> Path:
 
 
 def get_template(language: Language) -> Path:
-    return _get_project_root().joinpath(language.name, ".leet", "solution.jinja")
+    return language.path.joinpath(".leet", "solution.jinja")
 
 
 def get_solution(language: Language, problem: str) -> Path:
-    return _get_project_root().joinpath(
-        language.name, "src", "solutions", f"{problem}.{language.extension}"
+    return language.path.joinpath(
+        "src", "solutions", f"{problem}.{language.extension}"
     )
 
 
