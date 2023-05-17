@@ -12,10 +12,11 @@ class Statement:
 
     def show_statement(self, problem: str) -> None:
         statement = get_statement(problem)["common"]
-        print(ANSIEscape.OKGREEN, statement["title"], ANSIEscape.ENDC, sep="")
-        print(
-            ANSIEscape.OKGREEN, "~" * len(statement["title"]), ANSIEscape.ENDC, sep=""
-        )
+        if title := statement.get("title", ""):
+            print(ANSIEscape.OKGREEN, title, ANSIEscape.ENDC, sep="")
+            print(
+                ANSIEscape.OKGREEN, "~" * len(title), ANSIEscape.ENDC, sep=""
+            )
         print(statement["description"].strip())
         if self.show_hints and (hint := statement.get("hint")):
             print("")
