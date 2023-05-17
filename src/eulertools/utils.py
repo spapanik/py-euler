@@ -87,11 +87,17 @@ def _get_settings() -> Path:
 
 
 def _get_answers() -> Path:
-    return _get_project_root().joinpath("common", "answers.txt")
+    file = _get_project_root().joinpath("common", "answers.txt")
+    if not file.exists():
+        file.touch(mode=0o644)
+    return file
 
 
 def _get_timings(language: Language) -> Path:
-    return _get_project_root().joinpath(language.name, ".leet", "timings.txt")
+    file = _get_project_root().joinpath(language.name, ".leet", "timings.txt")
+    if not file.exists():
+        file.touch(mode=0o644)
+    return file
 
 
 def _get_statements_dir() -> Path:
