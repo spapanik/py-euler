@@ -175,6 +175,15 @@ def get_context(language: Language, problem: str) -> dict[str, str]:
     }
 
 
+def update_answers(answers: dict[str, dict[int, str]]) -> None:
+    answers_path = _get_answers()
+    with answers_path.open("w") as file:
+        for problem in sorted(answers):
+            for key in sorted(answers[problem]):
+                answer = answers[problem][key]
+                file.write(f"{problem} {key} {answer}\n")
+
+
 def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) -> None:
     timings_path = _get_timings(language)
     with timings_path.open("w") as file:

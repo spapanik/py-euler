@@ -60,6 +60,7 @@ def parse_args() -> argparse.Namespace:
     run_parser = subparsers.add_parser("run", parents=[parent_parser])
     language_specific(run_parser)
     problem_specific(run_parser)
+    run_parser.add_argument("-u", "--update", action="store_true")
 
     time_parser = subparsers.add_parser("time", parents=[parent_parser])
     language_specific(time_parser)
@@ -92,7 +93,12 @@ def main() -> None:
         case "generate":
             Generate(options.languages, options.problems).run()
         case "run":
-            Run(options.languages, options.problems, options.verbosity).run()
+            Run(
+                options.languages,
+                options.problems,
+                options.verbosity,
+                run_update=options.update,
+            ).run()
         case "time":
             Time(
                 options.languages,

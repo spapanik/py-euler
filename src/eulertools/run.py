@@ -1,7 +1,14 @@
 import subprocess
 from itertools import product
 
-from eulertools.utils import Language, Modes, get_answers, get_line_answer, get_solution
+from eulertools.utils import (
+    Language,
+    Modes,
+    get_answers,
+    get_line_answer,
+    get_solution,
+    update_answers,
+)
 
 
 class Run:
@@ -11,6 +18,7 @@ class Run:
         problems: list[str],
         verbosity: int,
         *,
+        run_update: bool = False,
         times: int = 1,
         mode: str = Modes.RUN,
     ):
@@ -20,6 +28,7 @@ class Run:
         self.times = times
         self.verbosity = verbosity
         self.expected_answers = get_answers()
+        self.run_update = run_update
 
     def run(self) -> dict[Language, dict[str, dict[int, list[int]]]]:
         output: dict[Language, dict[str, dict[int, list[int]]]] = {}
@@ -31,6 +40,8 @@ class Run:
                 output.setdefault(language, {})[problem] = timings
         if not success:
             raise RuntimeError("Some tests failed")
+        if self.run_update:
+            update_answers(self.expected_answers)
         return output
 
     def run_single_problem(
@@ -75,6 +86,7 @@ class Run:
                     print(
                         f"🟠 Running {language.name}/{problem}/{key}... new response: {value}"
                     )
+                expected_answers[key] = value
             elif value != expected_answers[key]:
                 success = False
                 print(
