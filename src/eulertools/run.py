@@ -1,7 +1,7 @@
 import subprocess
 from itertools import product
 
-from eulertools.utils import Language, Modes, get_answers, get_solution
+from eulertools.utils import Language, Modes, get_answers, get_line_answer, get_solution
 
 
 class Run:
@@ -48,12 +48,11 @@ class Run:
         actual_answers: dict[int, set[str]] = {}
         timings: dict[int, list[int]] = {}
         for line in output.splitlines():
-            output_type, run_id, value = line.split(maxsplit=2)
-            key = int(run_id)
+            output_type, run_id, value = get_line_answer(line)
             if output_type == "Time":
-                timings.setdefault(key, []).append(int(value) or 1)
+                timings.setdefault(run_id, []).append(int(value) or 1)
             elif output_type == "Answer":
-                actual_answers.setdefault(key, set()).add(value)
+                actual_answers.setdefault(run_id, set()).add(value)
         expected_answers = get_answers(problem)
         success = True
         if missing_answers := {

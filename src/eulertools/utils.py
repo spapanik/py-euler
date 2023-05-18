@@ -130,13 +130,29 @@ def get_settings() -> dict[str, Any]:
     return SettingsParser(_get_settings()).data
 
 
+def get_line_timing(line: str) -> tuple[str, int, Timing]:
+    problem_part, mode_id, timing = line.split(maxsplit=2)
+    return problem_part, int(mode_id), Timing.from_nanoseconds(int(timing))
+
+
+def get_line_answer(line: str) -> tuple[str, int, str]:
+    problem_part, mode_id, *answers = line.split(maxsplit=2)
+    if len(answers) == 0:
+        answer = ""
+    elif len(answers) == 1:
+        answer = answers[0]
+    else:
+        raise RuntimeError("Too many answers")
+    return problem_part, int(mode_id), answer
+
+
 def get_answers(problem: str) -> dict[int, str]:
     answers = _get_answers()
     output: dict[int, str] = {}
     for line in answers.read_text().splitlines():
         if line.startswith(problem):
-            problem_part, mode_id, answer = line.split(maxsplit=2)
-            output[int(mode_id)] = answer
+            problem_part, mode_id, answer = get_line_answer(line)
+            output[mode_id] = answer
     return output
 
 
@@ -144,8 +160,8 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
     timings = _get_timings(language)
     output: dict[str, dict[int, Timing]] = {}
     for line in timings.read_text().splitlines():
-        problem, key, timing = line.split()
-        output.setdefault(problem, {})[int(key)] = Timing.from_nanoseconds(int(timing))
+        problem, mode_id, timing = get_line_timing(line)
+        output.setdefault(problem, {})[mode_id] = timing
     return output
 
 
