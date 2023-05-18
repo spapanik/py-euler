@@ -19,6 +19,7 @@ class Run:
         self.mode = mode
         self.times = times
         self.verbosity = verbosity
+        self.expected_answers = get_answers()
 
     def run(self) -> dict[Language, dict[str, dict[int, list[int]]]]:
         output: dict[Language, dict[str, dict[int, list[int]]]] = {}
@@ -53,7 +54,7 @@ class Run:
                 timings.setdefault(run_id, []).append(int(value) or 1)
             elif output_type == "Answer":
                 actual_answers.setdefault(run_id, set()).add(value)
-        expected_answers = get_answers(problem)
+        expected_answers = self.expected_answers.setdefault(problem, {})
         success = True
         if missing_answers := {
             answer for answer in expected_answers if answer not in actual_answers

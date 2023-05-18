@@ -146,13 +146,12 @@ def get_line_answer(line: str) -> tuple[str, int, str]:
     return problem_part, int(mode_id), answer
 
 
-def get_answers(problem: str) -> dict[int, str]:
+def get_answers() -> dict[str, dict[int, str]]:
     answers = _get_answers()
-    output: dict[int, str] = {}
+    output: dict[str, dict[int, str]] = {}
     for line in answers.read_text().splitlines():
-        if line.startswith(problem):
-            problem_part, mode_id, answer = get_line_answer(line)
-            output[mode_id] = answer
+        problem, mode_id, answer = get_line_answer(line)
+        output.setdefault(problem, {})[mode_id] = answer
     return output
 
 
@@ -203,7 +202,9 @@ def get_all_problems() -> list[str]:
 
 def get_all_keyed_problems() -> list[tuple[str, int]]:
     output = [
-        (problem, key) for problem in get_all_problems() for key in get_answers(problem)
+        (problem, key)
+        for problem, problem_info in get_answers().items()
+        for key in problem_info
     ]
     return sorted(output)
 
