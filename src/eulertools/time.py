@@ -32,6 +32,9 @@ class Time:
     def run(self) -> None:
         for language, problem in product(self.languages, self.problems):
             self.time_single_problem(language, problem)
+        if self.run_update:
+            for language in self.languages:
+                update_timings(language, self.timings[language])
 
     def time_single_problem(self, language: Language, problem: str) -> None:
         self.timings[language].setdefault(problem, {})
@@ -63,8 +66,6 @@ class Time:
                 print("New timings:")
                 for i, timing in enumerate(raw_timing):
                     print(f"* Run {i + 1} took: {Timing.from_nanoseconds(timing)}")
-            if self.run_update:
-                update_timings(language, self.timings[language])
             prefix = "New" if old_timing is not None else "Initial"
             print(f"{prefix} timing: {new_timing}")
             if self.verbosity > 1 and old_timing is not None:
