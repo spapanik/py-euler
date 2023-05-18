@@ -56,9 +56,13 @@ class Run:
                 actual_answers.setdefault(key, set()).add(value)
         expected_answers = get_answers(problem)
         success = True
-        if self.mode != Modes.TIMING and len(actual_answers) != len(expected_answers):
+        if missing_answers := {
+            answer for answer in expected_answers if answer not in actual_answers
+        }:
             success = False
-            print(f"🔴 Running {problem}... Not the expected number of answers.")
+            print(
+                f"🔴 Running {problem}... Missing answers with keys {missing_answers}."
+            )
         for key, values in actual_answers.items():
             if len(values) != 1:
                 success = False
