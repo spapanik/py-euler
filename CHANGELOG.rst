@@ -9,6 +9,12 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 `Unreleased`_
 -------------
 
+Added
+^^^^^
+* Allow extra test cases without failing the cache
+* Allow empty string answers
+* Allow adding new answers
+
 `0.8.0`_ - 2023-05-17
 ---------------------
 Added
