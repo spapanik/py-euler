@@ -6,7 +6,7 @@ The easiest way is to use `pipx`_ to install ``eulertools``.
 
 .. code:: console
 
-   $ pipx install yamk
+   $ pipx install eulertools
 
 This is the only officially supported way of installing it.
 As ``eulertools`` require python 3.11+, please make sure that

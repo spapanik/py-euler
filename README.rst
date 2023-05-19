@@ -38,7 +38,7 @@ The easiest way is to use `pipx`_ to install ``eulertools``.
 
 .. code:: console
 
-   $ pipx install yamk
+   $ pipx install eulertools
 
 This is the only officially supported way of installing it.
 As ``eulertools`` require python 3.11+, please make sure that
@@ -50,11 +50,13 @@ Usage
 
 ``eulertools`` provides a cli command called ``euler``, which has the following subcommands:
 
-compare: compare the timings between different languages
-generate: generate a template for a new problem from the language template
-run: run (and test) problems for various language implementations
-statement: show the problem statement and the hint for the solution
-time: run the timings for a specific problem
+::
+
+    compare: Compare the timings between different languages
+    generate: Generate a template for a new problem from the language template
+    run: Run (and test) problems for various language implementations
+    statement: Show the problem statement and the hint for the solution
+    time: Run the timings for a specific problem
 
 For the required project structure, please view the detailed `Documentation`_.
 
