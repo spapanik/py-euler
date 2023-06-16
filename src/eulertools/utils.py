@@ -166,13 +166,13 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
 
 def get_context(language: Language, problem: str) -> dict[str, str]:
     statement = get_statement(problem)
-    return {
+    output = {
         "problem": problem,
         "title": statement["common"].get("title", ""),
         "method": statement["common"].get("method", ""),
-        "args": statement.get(language.name, {}).get("args", ""),
-        "rtype": statement.get(language.name, {}).get("rtype", ""),
     }
+    output.update(statement.get(language.name, {}))
+    return output
 
 
 def update_answers(answers: dict[str, dict[int, str]]) -> None:
