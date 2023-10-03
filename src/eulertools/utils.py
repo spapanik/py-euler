@@ -28,11 +28,11 @@ class Modes(StrEnum):
     RUN = "run"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, order=True)
 class Timing:
-    time: Decimal
-    unit: str
-    nanoseconds: int = field(repr=False, compare=False)
+    time: Decimal = field(compare=False)
+    unit: str = field(compare=False)
+    nanoseconds: int = field(repr=False)
 
     @classmethod
     def from_nanoseconds(cls, nanoseconds: int) -> Self:
