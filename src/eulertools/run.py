@@ -53,6 +53,7 @@ class Run:
         raw_output = subprocess.run(
             [language.runner, problem, str(self.times)],  # noqa: S603
             capture_output=True,
+            check=True,
         )
         output = raw_output.stdout.decode()
         if self.verbosity > 3:
