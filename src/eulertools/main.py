@@ -6,6 +6,7 @@ from eulertools.compare import Compare
 from eulertools.generate import Generate
 from eulertools.run import Run
 from eulertools.statement import Statement
+from eulertools.test import Test
 from eulertools.time import Time
 from eulertools.utils import (
     filter_languages,
@@ -72,6 +73,11 @@ def parse_args() -> argparse.Namespace:
     language_specific(compare_parser)
     problem_specific(compare_parser)
 
+    test_parser = subparsers.add_parser("test", parents=[parent_parser])
+    language_specific(test_parser)
+    problem_specific(test_parser)
+    test_parser.add_argument("-t", "--times", type=int, default=2)
+
     statement_parser = subparsers.add_parser("statement", parents=[parent_parser])
     problem_specific(statement_parser)
     statement_parser.add_argument(
@@ -106,6 +112,10 @@ def main() -> None:
                 options.times,
                 options.verbosity,
                 run_update=options.update,
+            ).run()
+        case "test":
+            Test(
+                options.languages, options.problems, options.times, options.verbosity
             ).run()
         case "compare":
             Compare(options.languages, options.problems).run()

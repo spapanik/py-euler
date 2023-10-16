@@ -9,6 +9,11 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 `Unreleased`_
 -------------
 
+Added
+^^^^^
+* Command to test a problem for a language
+
+
 `0.9.0`_ - 2023-05-19
 ---------------------
 Added
