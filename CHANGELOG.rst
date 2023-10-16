@@ -9,6 +9,10 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 `Unreleased`_
 -------------
 
+Changed
+^^^^^^^
+* Make the default for statement to be hiding the hints
+
 `0.10.0`_ - 2023-10-16
 ----------------------
 
