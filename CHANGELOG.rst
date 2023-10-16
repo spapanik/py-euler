@@ -9,6 +9,9 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 `Unreleased`_
 -------------
 
+`0.10.0`_ - 2023-10-16
+----------------------
+
 Added
 ^^^^^
 * Command to test a problem for a language
@@ -20,7 +23,6 @@ Changed
 Fixed
 ^^^^^
 * A bug with the output of non-deterministic runs
-
 
 `0.9.0`_ - 2023-05-19
 ---------------------
@@ -101,7 +103,8 @@ Added
 * Allow generating solutions from a template
 
 
-.. _`unreleased`: https://github.com/spapanik/eulertools/compare/v0.9.0...main
+.. _`unreleased`: https://github.com/spapanik/eulertools/compare/v0.10.0...main
+.. _`0.10.0`: https://github.com/spapanik/yamk/compare/v0.9.0...v0.10.0
 .. _`0.9.0`: https://github.com/spapanik/yamk/compare/v0.8.0...v0.9.0
 .. _`0.8.0`: https://github.com/spapanik/yamk/compare/v0.7.0...v0.8.0
 .. _`0.7.0`: https://github.com/spapanik/yamk/compare/v0.6.0...v0.7.0
