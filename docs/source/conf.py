@@ -7,5 +7,5 @@ extensions: list[str] = []
 templates_path = ["_templates"]
 exclude_patterns: list[str] = []
 
-html_theme = "furo"
+html_theme = "piccolo_theme"
 html_static_path = ["_static"]
