@@ -13,6 +13,10 @@ Added
 ^^^^^
 * Command to test a problem for a language
 
+Fixed
+^^^^^
+* A bug with the output of non-deterministic runs
+
 
 `0.9.0`_ - 2023-05-19
 ---------------------

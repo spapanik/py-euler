@@ -76,13 +76,13 @@ class Run:
                 f"🔴 Running {problem}... Missing answers with keys {missing_answers}."
             )
         for key, values in actual_answers.items():
-            if len(values) != 1:
+            value = values.pop()
+            if len(values) != 0:
                 success = False
                 print(
                     f"🔴 Running {language.name}/{problem}/{key}... Not deterministic answer."
                 )
-            value = values.pop()
-            if key not in expected_answers:
+            elif key not in expected_answers:
                 if self.mode != Modes.TIMING:
                     print(
                         f"🟠 Running {language.name}/{problem}/{key}... new response: {value}"
