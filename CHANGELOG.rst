@@ -13,6 +13,10 @@ Added
 ^^^^^
 * Command to test a problem for a language
 
+Changed
+^^^^^^^
+* Timing output is now more informative
+
 Fixed
 ^^^^^
 * A bug with the output of non-deterministic runs
