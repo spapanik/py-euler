@@ -69,7 +69,7 @@ class Language:
         language = settings["languages"][name]
         return cls(
             name=name,
-            extension=language["extension"],
+            extension=language.get("extension", name),
             path=project_root.joinpath(language.get("path", name)),
             runner=project_root.joinpath(language["runner"]),
         )
