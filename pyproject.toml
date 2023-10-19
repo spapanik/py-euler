@@ -1,9 +1,13 @@
 [build-system]
-requires = ["poetry_core>=1.0.0"]
+requires = [
+    "poetry_core>=1.0.0",
+]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-target-version = ["py311"]
+target-version = [
+    "py311",
+]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -65,7 +69,9 @@ ignore = [
     "E501",
     "TRY003",
 ]
-src = ["src"]
+src = [
+    "src",
+]
 target-version = "py311"
 
 [tool.ruff.per-file-ignores]
@@ -84,7 +90,9 @@ ban-relative-imports = "all"
 
 [tool.ruff.isort]
 combine-as-imports = true
-forced-separate = ["tests"]
+forced-separate = [
+    "tests",
+]
 split-on-trailing-comma = false
 
 [tool.pytest.ini_options]
@@ -92,7 +100,9 @@ addopts = "-vv"
 testpaths = "tests"
 
 [tool.coverage.run]
-source = ["src/"]
+source = [
+    "src/",
+]
 data_file = ".cov_cache/coverage.dat"
 
 [tool.coverage.report]
@@ -109,13 +119,17 @@ authors = [
 ]
 
 license = "LGPL-3.0+"
-readme = "README.rst"
+readme = "docs/README.md"
 
 homepage = "https://eulertools.readthedocs.io/en/latest/"
 repository = "https://github.com/spapanik/eulertools"
 documentation = "https://eulertools.readthedocs.io/en/latest/"
 
-keywords = ["leetcode", "topcoder", "project_euler"]
+keywords = [
+    "leetcode",
+    "topcoder",
+    "project_euler",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Operating System :: OS Independent",
@@ -147,5 +161,6 @@ pytest = "^7.3"
 pytest-cov = "^4.0"
 
 [tool.poetry.group.docs.dependencies]
-piccolo-theme = "^0.18"
-sphinx = "^7.0"
+mkdocs = "^1.5"
+mkdocs-material = "^9.4"
+pygments = "^2.16"
