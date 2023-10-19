@@ -74,36 +74,48 @@ class Language:
             runner=project_root.joinpath(language["runner"]),
         )
 
+    def get_settings_root(self) -> Path:
+        project_root = _get_project_root()
+        project_settings_root = _get_settings_root()
+        path = project_settings_root.joinpath(self.path.relative_to(project_root))
+        if not path.exists():
+            path.mkdir(parents=True)
+        return path
+
 
 def _get_project_root() -> Path:
     cwd = Path.cwd().resolve()
-    while not cwd.joinpath("leet.toml").exists():
+    while not cwd.joinpath(".euler").is_dir():
         if cwd.as_posix() == "/":
             raise RuntimeError("Could not find project root")
         cwd = cwd.parent
     return cwd
 
 
+def _get_settings_root() -> Path:
+    return _get_project_root().joinpath(".euler")
+
+
 def _get_settings() -> Path:
-    return _get_project_root().joinpath("leet.toml")
+    return _get_settings_root().joinpath("euler.toml")
 
 
 def _get_answers() -> Path:
-    file = _get_project_root().joinpath("common", "answers.txt")
+    file = _get_settings_root().joinpath("answers.txt")
     if not file.exists():
         file.touch(mode=0o644)
     return file
 
 
 def _get_timings(language: Language) -> Path:
-    file = language.path.joinpath(".leet", "timings.txt")
+    file = language.get_settings_root().joinpath("timings.txt")
     if not file.exists():
         file.touch(mode=0o644)
     return file
 
 
 def _get_statements_dir() -> Path:
-    return _get_project_root().joinpath("common", "statements")
+    return _get_settings_root().joinpath("statements")
 
 
 def _get_statement(problem: str) -> Path:
@@ -115,7 +127,7 @@ def _get_statement(problem: str) -> Path:
 
 
 def get_template(language: Language) -> Path:
-    return language.path.joinpath(".leet", "solution.jinja")
+    return language.get_settings_root().joinpath("solution.jinja")
 
 
 def get_solution(language: Language, problem: str) -> Path:
