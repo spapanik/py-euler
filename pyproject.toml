@@ -112,7 +112,7 @@ skip_empty = true
 
 [tool.poetry]
 name = "eulertools"
-version = "0.10.0"
+version = "1.0.0"
 description = "Multilanguage competitive coding toolbox"
 authors = [
     "Stephanos Kuma <stephanos@kuma.ai>",
