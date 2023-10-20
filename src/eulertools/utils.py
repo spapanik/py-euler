@@ -178,12 +178,8 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
 
 def get_context(language: Language, problem: str) -> dict[str, str]:
     statement = get_statement(problem)
-    output = {
-        "problem": problem,
-        "title": statement["common"].get("title", ""),
-        "method": statement["common"].get("method", ""),
-    }
-    output.update(statement.get(language.name, {}))
+    output = {"problem": problem}
+    output |= statement.get(language.name, {})
     return output
 
 
