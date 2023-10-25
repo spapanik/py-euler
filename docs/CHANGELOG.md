@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-10-16
+
 ### Changed
 
 - Default to hide the problem hints when using `euler statement`
