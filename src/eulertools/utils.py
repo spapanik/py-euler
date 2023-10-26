@@ -139,17 +139,17 @@ def get_settings() -> dict[str, Any]:
 
 
 def get_line_timing(line: str) -> tuple[str, int, Timing]:
-    problem_part, mode_id, timing = line.split(maxsplit=2)
-    return problem_part, int(mode_id), Timing.from_nanoseconds(int(timing))
+    prefix, run_id, timing = line.split(maxsplit=2)
+    return prefix, int(run_id), Timing.from_nanoseconds(int(timing) or 1)
 
 
 def get_line_answer(line: str) -> tuple[str, int, str]:
-    problem_part, mode_id, *answers = line.split(maxsplit=2)
-    if len(answers) == 0:
+    prefix, run_id, *answers = line.split(maxsplit=2)
+    try:
+        answer = answers.pop()
+    except IndexError:
         answer = ""
-    elif len(answers) == 1:
-        answer = answers[0]
-    return problem_part, int(mode_id), answer
+    return prefix, int(run_id), answer
 
 
 def get_answers() -> dict[str, dict[int, str]]:
@@ -195,10 +195,11 @@ def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) ->
                 file.write(f"{problem} {key} {timing.nanoseconds}\n")
 
 
-def get_average(values: list[int]) -> int:
+def get_average(values: list[Timing]) -> Timing:
     if len(values) >= 3:
         values = sorted(values)[1:-1]
-    return sum(values) // len(values)
+    average_ns = sum(value.nanoseconds for value in values) // len(values)
+    return Timing.from_nanoseconds(average_ns)
 
 
 def get_all_languages() -> list[str]:

@@ -4,8 +4,10 @@ from itertools import product
 from eulertools.utils import (
     Language,
     Modes,
+    Timing,
     get_answers,
     get_line_answer,
+    get_line_timing,
     get_solution,
     update_answers,
 )
@@ -30,8 +32,8 @@ class Run:
         self.expected_answers = get_answers()
         self.run_update = run_update
 
-    def run(self) -> dict[Language, dict[str, dict[int, list[int]]]]:
-        output: dict[Language, dict[str, dict[int, list[int]]]] = {}
+    def run(self) -> dict[Language, dict[str, dict[int, list[Timing]]]]:
+        output: dict[Language, dict[str, dict[int, list[Timing]]]] = {}
         success = True
         for language, problem in product(self.languages, self.problems):
             run_success, timings = self.run_single_problem(language, problem)
@@ -46,7 +48,7 @@ class Run:
 
     def run_single_problem(
         self, language: Language, problem: str
-    ) -> tuple[bool | None, dict[int, list[int]]]:
+    ) -> tuple[bool | None, dict[int, list[Timing]]]:
         solution = get_solution(language, problem)
         if not solution.exists():
             return None, {}
@@ -59,15 +61,18 @@ class Run:
         if self.verbosity > 3:
             print(output)
         actual_answers: dict[int, set[str]] = {}
-        timings: dict[int, list[int]] = {}
-        for line in output.splitlines():
-            output_type, run_id, value = get_line_answer(line)
-            if output_type == "Time":
-                timings.setdefault(run_id, []).append(int(value) or 1)
-            elif output_type == "Answer":
-                actual_answers.setdefault(run_id, set()).add(value)
-        expected_answers = self.expected_answers.setdefault(problem, {})
+        timings: dict[int, list[Timing]] = {}
         success = True
+        for line in output.splitlines():
+            if line.startswith("Time"):
+                _, run_id, timing = get_line_timing(line)
+                timings.setdefault(run_id, []).append(timing)
+            elif line.startswith("Answer"):
+                _, run_id, answer = get_line_answer(line)
+                actual_answers.setdefault(run_id, set()).add(answer)
+            else:
+                success = False
+        expected_answers = self.expected_answers.setdefault(problem, {})
         if missing_answers := {
             answer for answer in expected_answers if answer not in actual_answers
         }:

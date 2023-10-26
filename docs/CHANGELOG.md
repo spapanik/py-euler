@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Changed
+
+- An output that doesn't conform to the expected one, fails the run
+
 ## [1.0.0] - 2023-10-16
 
 ### Changed

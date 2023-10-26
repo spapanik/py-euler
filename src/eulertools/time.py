@@ -5,7 +5,6 @@ from eulertools.utils import (
     ANSIEscape,
     Language,
     Modes,
-    Timing,
     get_average,
     get_solution,
     get_timings,
@@ -56,8 +55,7 @@ class Time:
         ).run()[language][problem]
         old_timings = self.timings[language][problem]
         new_timings = {
-            run_id: Timing.from_nanoseconds(get_average(timings))
-            for run_id, timings in raw_timings.items()
+            run_id: get_average(timings) for run_id, timings in raw_timings.items()
         }
         for key_index, key in enumerate(sorted(new_timings)):
             old_timing = old_timings.get(key)
@@ -86,16 +84,15 @@ class Time:
             if self.verbosity > 0:
                 print("    ⏱️  New timings:")
                 for i, timing in enumerate(raw_timing):
-                    run_timing = Timing.from_nanoseconds(timing)
                     if old_timing is None:
                         prefix = "🔵"
-                    elif run_timing > old_timing:
+                    elif timing > old_timing:
                         prefix = "⬆️ "
-                    elif run_timing < old_timing:
+                    elif timing < old_timing:
                         prefix = "⬇️ "
                     else:
                         prefix = "↔️ "
-                    print(f"       {prefix} Run {i + 1} took: {run_timing}")
+                    print(f"       {prefix} Run {i + 1} took: {timing}")
             if self.verbosity > 1 and old_timing is not None:
                 old_nanoseconds = old_timing.nanoseconds
                 new_nanoseconds = new_timing.nanoseconds
