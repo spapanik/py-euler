@@ -18,8 +18,6 @@ class Compare:
         self.print_table(self.transpose(matrix))
 
     def print_table(self, matrix: list[list[str]]) -> None:
-        if len(matrix) == 1:
-            raise RuntimeError("No data to print")
         n = len(self.languages) + 1
         spacing = ["─" * self.pad_length for _ in range(n)]
         top = "┌" + "┬".join(spacing) + "┐"

@@ -119,11 +119,7 @@ def _get_statements_dir() -> Path:
 
 
 def _get_statement(problem: str) -> Path:
-    statement = _get_statements_dir().joinpath(f"{problem}.toml")
-    if not statement.exists():
-        raise FileNotFoundError("No problem description found. Aborting...")
-
-    return statement
+    return _get_statements_dir().joinpath(f"{problem}.toml")
 
 
 def get_template(language: Language) -> Path:
@@ -153,8 +149,6 @@ def get_line_answer(line: str) -> tuple[str, int, str]:
         answer = ""
     elif len(answers) == 1:
         answer = answers[0]
-    else:
-        raise RuntimeError("Too many answers")
     return problem_part, int(mode_id), answer
 
 

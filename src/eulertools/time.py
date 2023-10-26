@@ -54,8 +54,6 @@ class Time:
             mode=Modes.TIMING,
             times=self.times,
         ).run()[language][problem]
-        if not raw_timings:
-            raise ValueError("No lines returned from Run.")
         old_timings = self.timings[language][problem]
         new_timings = {
             run_id: Timing.from_nanoseconds(get_average(timings))

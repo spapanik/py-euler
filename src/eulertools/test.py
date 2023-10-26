@@ -22,12 +22,10 @@ class Test:
         if not solution.exists():
             return
 
-        output = Run(
+        Run(
             [language],
             [problem],
             verbosity=self.verbosity,
             mode=Modes.RUN,
             times=self.times,
         ).run()[language][problem]
-        if not output:
-            raise ValueError("No lines returned from Run.")
