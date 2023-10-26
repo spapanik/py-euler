@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
+- Fail `euler run` early, in line with the rest of the commands
 - An output that doesn't conform to the expected one, fails the run
 
 ## [1.0.0] - 2023-10-16

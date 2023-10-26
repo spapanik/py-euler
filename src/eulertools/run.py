@@ -34,14 +34,11 @@ class Run:
 
     def run(self) -> dict[Language, dict[str, dict[int, list[Timing]]]]:
         output: dict[Language, dict[str, dict[int, list[Timing]]]] = {}
-        success = True
         for language, problem in product(self.languages, self.problems):
-            run_success, timings = self.run_single_problem(language, problem)
-            if run_success is not None:
-                success = success and run_success
-                output.setdefault(language, {})[problem] = timings
-        if not success:
-            raise RuntimeError("Some tests failed")
+            success, timings = self.run_single_problem(language, problem)
+            if not success:
+                raise RuntimeError("Some tests failed")
+            output.setdefault(language, {})[problem] = timings
         if self.run_update:
             update_answers(self.expected_answers)
         return output
