@@ -9,6 +9,12 @@ from typing import Any, Self
 
 from dj_settings import SettingsParser
 
+from eulertools.exceptions import (
+    InvalidLanguageError,
+    InvalidProblemError,
+    MissingProjectRootError,
+)
+
 TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 
 
@@ -87,7 +93,8 @@ def _get_project_root() -> Path:
     cwd = Path.cwd().resolve()
     while not cwd.joinpath(".euler").is_dir():
         if cwd.as_posix() == "/":
-            raise RuntimeError("Could not find project root")
+            message = f"Could not find .euler/euler.toml in {Path.cwd().resolve()} or any parent directory"
+            raise MissingProjectRootError(message)
         cwd = cwd.parent
     return cwd
 
@@ -222,14 +229,38 @@ def get_all_keyed_problems() -> list[tuple[str, int]]:
 
 
 def filter_languages(parsed_languages: list[str]) -> list[Language]:
-    language_strings = get_all_languages()
-    return [
-        Language.from_settings(language)
-        for language in language_strings
-        if language in parsed_languages
-    ]
+    available_languages = get_all_languages()
+    filtered_languages = []
+    for language in parsed_languages:
+        if language not in available_languages:
+            raise InvalidLanguageError(f"{language} is not a valid language")
+        filtered_languages.append(Language.from_settings(language))
+    return filtered_languages
 
 
-def filter_problems(parsed_problems: list[str]) -> list[str]:
-    problem_strings = get_all_problems()
-    return [problem for problem in problem_strings if problem in parsed_problems]
+def filter_problems(
+    parsed_problems: list[str], languages: list[Language] | None = None
+) -> list[str]:
+    if languages is None:
+        languages = filter_languages(get_all_languages())
+    all_problems = get_all_problems()
+    available_problems = {
+        problem
+        for problem in all_problems
+        if any(
+            get_statement(problem).get(language.name) is not None
+            for language in languages
+        )
+    }
+    filtered_problems = []
+    for problem in parsed_problems:
+        if problem not in all_problems:
+            raise InvalidProblemError(
+                f"{problem} is not a valid problem for any language"
+            )
+        if problem not in available_problems:
+            raise InvalidProblemError(
+                f"{problem} is not a valid problem for {', '.join(language.name for language in languages)}"
+            )
+        filtered_problems.append(problem)
+    return filtered_problems

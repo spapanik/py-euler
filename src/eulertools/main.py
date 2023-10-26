@@ -84,17 +84,19 @@ def parse_args() -> argparse.Namespace:
         "-s", "--show-hints", dest="show_hints", action="store_true"
     )
 
-    return parser.parse_args()
+    options = parser.parse_args()
+    if options.verbosity > 0:
+        sys.tracebacklimit = 9999
+    if hasattr(options, "languages"):
+        options.languages = filter_languages(options.languages)
+        options.problems = filter_problems(options.problems, options.languages)
+    elif hasattr(options, "problems"):
+        options.problems = filter_problems(options.problems)
+    return options
 
 
 def main() -> None:
     options = parse_args()
-    if options.verbosity > 0:
-        sys.tracebacklimit = 9999
-    options.languages = (
-        filter_languages(options.languages) if hasattr(options, "languages") else []
-    )
-    options.problems = filter_problems(options.problems)
     match options.command:
         case "generate":
             Generate(options.languages, options.problems).run()

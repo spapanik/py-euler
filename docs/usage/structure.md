@@ -87,15 +87,14 @@ if __name__ == "__main__":
 
 The `.euler` directory should have a subdirectory named `statements`, and inside it, it should be a file
 for each problem, using the name `<problem_name>.toml`. The runner will use this to find which problems
-have been solved. The file can be empty. There are two a few required sections if the `euler generate` or
-`euler statement` are to be used.
+have been solved. The file must have a table (even empty) for every language that is needed. Furthermore,
+there are two required sections if the `euler generate` or `euler statement` are to be used.
 
 For `euler statement`, the following toml tables are required:
 
 ``` toml title="p0001.toml"
 [common]
 title = "Two Sum"
-method = "twoSum"
 description = """
 Given an array of integers, return indices of the two numbers such that they
 add up to a specific target.
@@ -143,6 +142,7 @@ def run() -> None:
 
 ``` toml title="p0001.toml"
 [python]
+method = "twoSum"
 args = [
     "nums",
     "target",

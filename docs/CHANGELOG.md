@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
+- Only consider the problems in a language marked in the statement
 - Fail `euler run` early, in line with the rest of the commands
 - An output that doesn't conform to the expected one, fails the run
 

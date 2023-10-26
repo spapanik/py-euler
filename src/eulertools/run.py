@@ -1,6 +1,8 @@
 import subprocess
+import sys
 from itertools import product
 
+from eulertools.exceptions import FailedRunError
 from eulertools.utils import (
     Language,
     Modes,
@@ -35,9 +37,7 @@ class Run:
     def run(self) -> dict[Language, dict[str, dict[int, list[Timing]]]]:
         output: dict[Language, dict[str, dict[int, list[Timing]]]] = {}
         for language, problem in product(self.languages, self.problems):
-            success, timings = self.run_single_problem(language, problem)
-            if not success:
-                raise RuntimeError("Some tests failed")
+            timings = self.run_single_problem(language, problem)
             output.setdefault(language, {})[problem] = timings
         if self.run_update:
             update_answers(self.expected_answers)
@@ -45,10 +45,10 @@ class Run:
 
     def run_single_problem(
         self, language: Language, problem: str
-    ) -> tuple[bool | None, dict[int, list[Timing]]]:
+    ) -> dict[int, list[Timing]]:
         solution = get_solution(language, problem)
         if not solution.exists():
-            return None, {}
+            return {}
         raw_output = subprocess.run(
             [language.runner, problem, str(self.times)],  # noqa: S603
             capture_output=True,
@@ -59,7 +59,6 @@ class Run:
             print(output)
         actual_answers: dict[int, set[str]] = {}
         timings: dict[int, list[Timing]] = {}
-        success = True
         for line in output.splitlines():
             if line.startswith("Time"):
                 _, run_id, timing = get_line_timing(line)
@@ -68,21 +67,28 @@ class Run:
                 _, run_id, answer = get_line_answer(line)
                 actual_answers.setdefault(run_id, set()).add(answer)
             else:
-                success = False
+                print(
+                    f"🔴 Running {language.name}/{problem}... Cannot parse `{line}`.",
+                    file=sys.stderr,
+                )
+                raise FailedRunError(f"Unsuccessful run of {language.name}/{problem}")
         expected_answers = self.expected_answers.setdefault(problem, {})
         if missing_answers := {
             answer for answer in expected_answers if answer not in actual_answers
         }:
-            success = False
             print(
-                f"🔴 Running {problem}... Missing answers with keys {missing_answers}."
+                f"🔴 Running {language.name}/{problem}... Missing answers with keys {missing_answers}.",
+                file=sys.stderr,
             )
+            raise FailedRunError(f"Unsuccessful run of {language.name}/{problem}")
+        success = True
         for key, values in actual_answers.items():
             value = values.pop()
             if len(values) != 0:
                 success = False
                 print(
-                    f"🔴 Running {language.name}/{problem}/{key}... Not deterministic answer."
+                    f"🔴 Running {language.name}/{problem}/{key}... Not deterministic answer.",
+                    file=sys.stderr,
                 )
             elif key not in expected_answers:
                 if self.mode != Modes.TIMING:
@@ -93,8 +99,11 @@ class Run:
             elif value != expected_answers[key]:
                 success = False
                 print(
-                    f"🔴 Running {language.name}/{problem}/{key}... expected: {expected_answers[key]}, got: {value}"
+                    f"🔴 Running {language.name}/{problem}/{key}... expected: {expected_answers[key]}, got: {value}",
+                    file=sys.stderr,
                 )
             elif self.mode != Modes.TIMING:
                 print(f"🟢 Running {language.name}/{problem}/{key}... {value}")
-        return success, timings
+        if not success:
+            raise FailedRunError(f"Unsuccessful run of {language.name}/{problem}")
+        return timings
