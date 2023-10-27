@@ -71,9 +71,7 @@ def parse_args() -> argparse.Namespace:
 
     statement_parser = subparsers.add_parser("statement", parents=[parent_parser])
     problem_specific(statement_parser)
-    statement_parser.add_argument(
-        "-s", "--show-hints", dest="show_hints", action="store_true"
-    )
+    statement_parser.add_argument("-s", "--show-hints", action="store_true")
 
     options = parser.parse_args()
     if options.verbosity > 0:
