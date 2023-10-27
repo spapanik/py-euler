@@ -75,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 
     options = parser.parse_args()
     if options.verbosity > 0:
-        sys.tracebacklimit = 9999
+        sys.tracebacklimit = 1000
     if hasattr(options, "languages"):
         options.languages = filter_languages(options.languages)
         options.problems = filter_problems(options.problems, options.languages)
