@@ -209,14 +209,23 @@ def get_average(values: list[Timing]) -> Timing:
     return Timing.from_nanoseconds(average_ns)
 
 
-def get_all_languages() -> list[str]:
+def get_all_languages() -> list[Language]:
     languages = get_settings()["languages"]
-    return sorted(languages)
+    return sorted(Language.from_settings(language) for language in languages)
 
 
-def get_all_problems() -> list[str]:
+def get_all_problems(languages: list[Language] | None = None) -> list[str]:
     statement_dir = _get_statements_dir()
-    return sorted(file.stem for file in statement_dir.iterdir())
+    if languages is None:
+        languages = get_all_languages()
+    return sorted(
+        file.stem
+        for file in statement_dir.iterdir()
+        if any(
+            get_statement(file.stem).get(language.name) is not None
+            for language in languages
+        )
+    )
 
 
 def get_all_keyed_problems() -> list[tuple[str, int]]:
@@ -228,11 +237,14 @@ def get_all_keyed_problems() -> list[tuple[str, int]]:
     return sorted(output)
 
 
-def filter_languages(parsed_languages: list[str]) -> list[Language]:
-    available_languages = get_all_languages()
+def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
+    all_languages = get_all_languages()
+    if parsed_languages is None:
+        return all_languages
     filtered_languages = []
+    language_names = {language.name for language in all_languages}
     for language in parsed_languages:
-        if language not in available_languages:
+        if language not in language_names:
             raise InvalidLanguageError(f"{language} is not a valid language")
         filtered_languages.append(Language.from_settings(language))
     return filtered_languages
@@ -241,24 +253,16 @@ def filter_languages(parsed_languages: list[str]) -> list[Language]:
 def filter_problems(
     parsed_problems: list[str], languages: list[Language] | None = None
 ) -> list[str]:
-    if languages is None:
-        languages = filter_languages(get_all_languages())
-    all_problems = get_all_problems()
-    available_problems = {
-        problem
-        for problem in all_problems
-        if any(
-            get_statement(problem).get(language.name) is not None
-            for language in languages
-        )
-    }
+    all_problems = get_all_problems(languages)
+    if not parsed_problems:
+        return sorted(all_problems)
     filtered_problems = []
     for problem in parsed_problems:
         if problem not in all_problems:
-            raise InvalidProblemError(
-                f"{problem} is not a valid problem for any language"
-            )
-        if problem not in available_problems:
+            if languages is None:
+                raise InvalidProblemError(
+                    f"{problem} is not a valid problem for any language"
+                )
             raise InvalidProblemError(
                 f"{problem} is not a valid problem for {', '.join(language.name for language in languages)}"
             )

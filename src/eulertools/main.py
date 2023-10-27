@@ -8,26 +8,17 @@ from eulertools.run import Run
 from eulertools.statement import Statement
 from eulertools.test import Test
 from eulertools.time import Time
-from eulertools.utils import (
-    filter_languages,
-    filter_problems,
-    get_all_languages,
-    get_all_problems,
-)
+from eulertools.utils import filter_languages, filter_problems
 
 sys.tracebacklimit = 0
-LANGUAGES = get_all_languages()
-PROBLEMS = get_all_problems()
 
 
 def language_specific(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "-l", "--language", nargs="*", dest="languages", default=LANGUAGES
-    )
+    parser.add_argument("-l", "--language", nargs="*", dest="languages")
 
 
 def problem_specific(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("-p", "--problem", nargs="*", dest="problems", default=PROBLEMS)
+    parser.add_argument("-p", "--problem", nargs="*", dest="problems")
 
 
 def parse_args() -> argparse.Namespace:

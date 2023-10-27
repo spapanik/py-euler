@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Fixed
+
+- Allow viewing the version from inside any directory
+
 ### Changed
 
 - Only consider the problems in a language marked in the statement
