@@ -123,7 +123,7 @@ readme = "docs/README.md"
 
 homepage = "https://eulertools.readthedocs.io/en/latest/"
 repository = "https://github.com/spapanik/eulertools"
-documentation = "https://eulertools.readthedocs.io/en/latest/"
+documentation = "https://eulertools.readthedocs.io/en/stable/"
 
 keywords = [
     "leetcode",
