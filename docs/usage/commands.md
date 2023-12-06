@@ -167,7 +167,7 @@ Timing python/p0074/1...
 🟢 Performance difference: 0.94%
 ```
 
-The `-u/--update` flag updates the caches timings, and the emojis in front of each line
+The `-u/--update` flag updates the cached timings, and the emojis in front of each line
 have the following meaning:
 
 * 🟤 This is the old timing
