@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-12-06
+
 ### Added
 
 - Add a flag only to add new timings, instead of updating them all.
@@ -127,7 +129,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/spapanik/eulertools/compare/v2.0.0...main
+[Unreleased]: https://github.com/spapanik/eulertools/compare/v2.1.0...main
+[2.1.0]: https://github.com/spapanik/eulertools/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/spapanik/eulertools/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/spapanik/eulertools/compare/v0.10.0...v1.0.0
 [0.10.0]: https://github.com/spapanik/eulertools/compare/v0.9.0...v0.10.0
