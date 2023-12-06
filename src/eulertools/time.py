@@ -21,12 +21,14 @@ class Time:
         verbosity: int,
         *,
         run_update: bool,
+        append_new: bool,
     ):
         self.languages = languages
         self.problems = problems
         self.times = times
         self.verbosity = verbosity
         self.run_update = run_update
+        self.append_new = append_new
         self.timings = {language: get_timings(language) for language in languages}
 
     def run(self) -> None:
@@ -34,7 +36,7 @@ class Time:
             product(self.languages, self.problems)
         ):
             self.time_single_problem(language, problem, run_index)
-        if self.run_update:
+        if self.run_update or self.append_new:
             for language in self.languages:
                 update_timings(language, self.timings[language])
 
@@ -69,7 +71,8 @@ class Time:
                 overall_difference = "🟢"
             else:
                 overall_difference = "🔵"
-            self.timings[language][problem][key] = new_timing
+            if self.run_update or (self.append_new and old_timing is None):
+                self.timings[language][problem][key] = new_timing
             title = f"Timing {language.name}/{problem}/{key}..."
             if run_index or key_index:
                 print()

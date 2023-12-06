@@ -176,3 +176,6 @@ have the following meaning:
 * 🔴 This set of runs is overall worse than the cached one
 * ⬇ This specific run is better than the cached one
 * ⬆ This specific run is worse than the cached one
+
+The `-a/--append` flag only append new timings to the cached timings, and the emojis in front of each line
+have the same meaning as with the `-u/--update` flag.

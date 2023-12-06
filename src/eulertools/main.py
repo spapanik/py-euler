@@ -58,7 +58,9 @@ def parse_args() -> argparse.Namespace:
     language_specific(time_parser)
     problem_specific(time_parser)
     time_parser.add_argument("-t", "--times", type=int, default=10)
-    time_parser.add_argument("-u", "--update", action="store_true")
+    group = time_parser.add_mutually_exclusive_group()
+    group.add_argument("-a", "--append", action="store_true")
+    group.add_argument("-u", "--update", action="store_true")
 
     compare_parser = subparsers.add_parser("compare", parents=[parent_parser])
     language_specific(compare_parser)
@@ -103,6 +105,7 @@ def main() -> None:
                 options.times,
                 options.verbosity,
                 run_update=options.update,
+                append_new=options.append,
             ).run()
         case "test":
             Test(

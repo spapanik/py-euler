@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Add a flag only to add new timings, instead of updating them all.
+
 ## [2.0.0] - 2023-10-27
 
 ### Fixed
