@@ -7,7 +7,7 @@ from enum import StrEnum, unique
 from pathlib import Path
 from typing import Any, Self
 
-from dj_settings import SettingsParser
+from dj_settings import ConfigParser
 
 from eulertools.exceptions import (
     InvalidLanguageError,
@@ -138,11 +138,11 @@ def get_solution(language: Language, problem: str) -> Path:
 
 
 def get_statement(problem: str) -> dict[str, Any]:
-    return SettingsParser(_get_statement(problem)).data
+    return ConfigParser([_get_statement(problem)]).data
 
 
 def get_settings() -> dict[str, Any]:
-    return SettingsParser(_get_settings()).data
+    return ConfigParser([_get_settings()]).data
 
 
 def get_line_timing(line: str) -> tuple[str, int, Timing]:
