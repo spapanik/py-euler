@@ -135,7 +135,7 @@ authors = [
 license = "LGPL-3.0+"
 readme = "docs/README.md"
 
-homepage = "https://eulertools.readthedocs.io/en/latest/"
+homepage = "https://eulertools.readthedocs.io/en/stable/"
 repository = "https://github.com/spapanik/eulertools"
 documentation = "https://eulertools.readthedocs.io/en/stable/"
 
