@@ -258,8 +258,13 @@ def filter_problems(
     if not parsed_problems:
         return sorted(all_problems)
     filtered_problems = []
+    problem_formatter = get_settings().get("problems", {}).get("format", "")
     for problem in parsed_problems:
         if problem not in all_problems:
+            formatted_problem = problem_formatter.format(problem)
+            if formatted_problem in all_problems:
+                filtered_problems.append(formatted_problem)
+                continue
             if languages is None:
                 msg = f"{problem} is not a valid problem for any language"
                 raise InvalidProblemError(msg)

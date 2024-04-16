@@ -36,6 +36,15 @@ path = "cpp"
 runner = "cpp/cli/runner"
 ```
 
+Optionally, there is a section called `problems`, that allows to pass the problems as arguments to the cli commands in a more user-friendly way.
+
+``` toml linenums="1" title="euler.toml"
+[languages]
+format = "p{:0>4s}"
+```
+With the following config, if passing the string `p0020` to the `-l` flag in the cli command is desired,
+it can be abbreviated to `0020`, or even just `20`.
+
 ## Problem runner
 
 the runner is a cli app that runs the problems for a specific language. It should be able to run with the

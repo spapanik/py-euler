@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Added a way to allow passing the problem name in a different format
+
 ## [2.1.0] - 2023-12-06
 
 ### Added
