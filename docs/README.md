@@ -23,8 +23,8 @@ please view the detailed [Documentation].
 
 ## Links
 
-- [Documentation]
-- [Changelog]
+-   [Documentation]
+-   [Changelog]
 
 [test_badge]: https://github.com/spapanik/eulertools/actions/workflows/tests.yml/badge.svg
 [test_url]: https://github.com/spapanik/eulertools/actions/workflows/tests.yml

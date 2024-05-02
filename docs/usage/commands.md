@@ -18,10 +18,10 @@ timings, that are produced from `euler time`.
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
 
-``` console title="compare"
+```console title="compare"
 user@localhost $ euler compare -p p0003 p0107 -l nim python
 ┌─────────┬─────────┬─────────┐
 │ problem │   nim   │  python │
@@ -43,8 +43,8 @@ is strongly advised to always run with a specific language and problem.
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
 
 ## Run
 
@@ -52,11 +52,11 @@ Optional arguments:
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
-* -u/--update
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
+-   -u/--update
 
-``` console title="run"
+```console title="run"
 user@localhost $ euler run -l rust java -p p0001 p0002
 🟢 Running java/p0001/1... 233168
 🟢 Running java/p0001/2... 23331668
@@ -78,9 +78,9 @@ RuntimeError: Some tests failed
 
 The emojis in front of each line have the following meaning:
 
-* 🟢 The answer for this problem and response_id matches the saved one
-* 🟠 This is a new problem/response_id combination
-* 🔴 The run didn't produce the same answer as the saved one
+-   🟢 The answer for this problem and response_id matches the saved one
+-   🟠 This is a new problem/response_id combination
+-   🔴 The run didn't produce the same answer as the saved one
 
 Passing the `-u/--update` flag, will update the saved answers with the ones
 from this run.
@@ -93,14 +93,14 @@ produces the same answer.
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
-* -t/--times TIMES (defaults to 2)
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
+-   -t/--times TIMES (defaults to 2)
 
 This will run the problem for \<TIMES\> times and it will check if all of them match
 the saved ones.
 
-``` console title="test"
+```console title="test"
 user@localhost $ euler test -p p0001 -l java
 🟢 Running java/p0001/1... 233168
 🔴 Running java/p0001/2... Not deterministic answer.
@@ -118,11 +118,11 @@ the red emoji also indicates that not all runs produced the same answer.
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
-* -s/--show-hints
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
+-   -s/--show-hints
 
-``` console title="statement"
+```console title="statement"
 user@localhost $ euler-dev statement -p p0001 -s
 Two Sum
 ~~~~~~~
@@ -142,12 +142,12 @@ For better than O(n^2) complexity, keep a dictionary of the complements.
 
 Optional arguments:
 
-* -l/--languages [LANGUAGE ...]
-* -p/--problems [PROBLEM ...]
-* -t/--times TIMES (defaults to 10)
-* -u/--update
+-   -l/--languages [LANGUAGE ...]
+-   -p/--problems [PROBLEM ...]
+-   -t/--times TIMES (defaults to 10)
+-   -u/--update
 
-``` console title="time"
+```console title="time"
 user@localhost $ euler time -l python -t 3 -u -p p0074 -vvvv
 Time 1 1097407458
 Answer 1 402
@@ -170,12 +170,12 @@ Timing python/p0074/1...
 The `-u/--update` flag updates the cached timings, and the emojis in front of each line
 have the following meaning:
 
-* 🟤 This is the old timing
-* 🟢 This set of runs is overall better than the cached one
-* 🔵 This set of runs is the same as the cached one (or there isn't a cached one)
-* 🔴 This set of runs is overall worse than the cached one
-* ⬇ This specific run is better than the cached one
-* ⬆ This specific run is worse than the cached one
+-   🟤 This is the old timing
+-   🟢 This set of runs is overall better than the cached one
+-   🔵 This set of runs is the same as the cached one (or there isn't a cached one)
+-   🔴 This set of runs is overall worse than the cached one
+-   ⬇ This specific run is better than the cached one
+-   ⬆ This specific run is worse than the cached one
 
 The `-a/--append` flag only append new timings to the cached timings, and the emojis in front of each line
 have the same meaning as with the `-u/--update` flag.

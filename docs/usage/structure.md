@@ -4,9 +4,9 @@
 recursively looks for the project root. The project root is marked by
 the existence of a `.euler` directory. The required files and directories are:
 
-* `.euler/`
-* `.euler/euler.toml`
-* `.euler/statements/<problem_name>.toml` for every problem
+-   `.euler/`
+-   `.euler/euler.toml`
+-   `.euler/statements/<problem_name>.toml` for every problem
 
 ## `euler.toml`
 
@@ -16,13 +16,13 @@ inside the `.euler` directory.
 Each language is a section `[language.<language_name>]`, with the
 following fields:
 
-* extension: \[optional\] the filename extension for the problems solved
-  in this language. Defaults to `./<language_name>`
-* path: \[optional\] the path (relative to the project root)
-  of the language solution. Defaults to `./<language_name>`
-* runner: the path (relative to the project root) of the solution runner
+-   extension: \[optional\] the filename extension for the problems solved
+    in this language. Defaults to `./<language_name>`
+-   path: \[optional\] the path (relative to the project root)
+    of the language solution. Defaults to `./<language_name>`
+-   runner: the path (relative to the project root) of the solution runner
 
-``` toml linenums="1" title="euler.toml"
+```toml linenums="1" title="euler.toml"
 [languages.java]
 runner = "java/out/release/runner"
 
@@ -38,10 +38,11 @@ runner = "cpp/cli/runner"
 
 Optionally, there is a section called `problems`, that allows to pass the problems as arguments to the cli commands in a more user-friendly way.
 
-``` toml linenums="1" title="euler.toml"
+```toml linenums="1" title="euler.toml"
 [languages]
 format = "p{:0>4s}"
 ```
+
 With the following config, if passing the string `p0020` to the `-l` flag in the cli command is desired,
 it can be abbreviated to `0020`, or even just `20`.
 
@@ -50,14 +51,14 @@ it can be abbreviated to `0020`, or even just `20`.
 the runner is a cli app that runs the problems for a specific language. It should be able to run with the
 following positional arguments:
 
-``` console
+```console
 user@localhost $ <runner> <problem_name> <times>
 ```
 
 It should run the problem named `problem_name` for `<times>` times. Each run should return exactly
 k pair of lines, each pair having the following format:
 
-``` console linenums="1"
+```console linenums="1"
 Time <response_id> <timing in ns>
 Answer <response_id> <answer>
 ```
@@ -67,7 +68,7 @@ you can hard-code a specific value, eg `1`.
 
 A simple program runner in python can look like:
 
-``` py linenums="1" title="Python runner"
+```py linenums="1" title="Python runner"
 #!/usr/bin/env python
 import argparse
 import importlib
@@ -101,7 +102,7 @@ there are two required sections if the `euler generate` or `euler statement` are
 
 For `euler statement`, the following toml tables are required:
 
-``` toml title="p0001.toml"
+```toml title="p0001.toml"
 [common]
 title = "Two Sum"
 description = """
@@ -126,7 +127,7 @@ is generated, it will create a file in the `<language_path>/src/solutions` with 
 
 For the above problem an example python template and toml table are the following:
 
-``` jinja title="solution.jinja"
+```jinja title="solution.jinja"
 from time import perf_counter_ns
 
 
@@ -149,7 +150,7 @@ def run() -> None:
     proxy(..., response_id=1)
 ```
 
-``` toml title="p0001.toml"
+```toml title="p0001.toml"
 [python]
 method = "twoSum"
 args = [
@@ -159,7 +160,6 @@ args = [
 types = { nums = "list[int]", target = "int" }
 rtype = "list[int]"
 ```
-
 
 ## General considerations
 
