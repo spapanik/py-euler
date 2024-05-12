@@ -1,15 +1,37 @@
 # Installation
 
-The easiest way is to use [pipx] to install `eulertools`.
+## Officially Supported Method: Using pipx
+
+We recommend using [pipx] for the installation of `eulertools` as it provides
+an isolated environment for the package, preventing any dependency conflicts.
+
+To install `eulertools` using pipx, run the following command in your terminal:
 
 ```console
 $ pipx install eulertools
 ```
 
-This is the only officially supported way of installing it.
-As `eulertools` require python 3.11+, please make sure that
-this is the version used by your system, or use a tool like
-[pyenv] to create a shell with such a python version.
+## Alternative Method: Using pip
 
-[pipx]: https://pypa.github.io/pipx/
-[pyenv]: https://github.com/pyenv/pyenv
+As an alternative, you can use [pip] to install `eulertools`.
+However, this method does not provide an isolated environment for the package,
+which may lead to dependency conflicts or leave your system in an inconsistent state.
+Therefore, this method is not recommended or supported.
+
+To install `eulertools` using pip, run the following command in your terminal:
+
+```console
+$ pip install --user eulertools
+```
+
+## Python Version Requirement
+
+Please note that `eulertools` requires Python 3.11 or higher. Please ensure
+that your system is using the correct Python version. If not,
+consider using a tool like [pyenv] to create a shell with the required Python version.
+
+## Useful Links
+
+-   [pip]: https://pip.pypa.io/en/stable/
+-   [pipx]: https://pypa.github.io/pipx/
+-   [pyenv]: https://github.com/pyenv/pyenv
