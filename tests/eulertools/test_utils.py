@@ -1,4 +1,5 @@
 import pytest
+from pyutilkit.timing import Timing
 
 from eulertools import utils
 
@@ -13,5 +14,5 @@ from eulertools import utils
     ],
 )
 def test_get_average(values: list[int], expected: int) -> None:
-    timings = [utils.Timing.from_nanoseconds(value) for value in values]
-    assert utils.get_average(timings) == utils.Timing.from_nanoseconds(expected)
+    timings = [Timing(nanoseconds=value) for value in values]
+    assert utils.get_average(timings) == Timing(nanoseconds=expected)

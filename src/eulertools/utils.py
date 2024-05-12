@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from decimal import Decimal
 from enum import StrEnum, unique
 from pathlib import Path
 from typing import Any, Self
 
 from dj_settings import ConfigParser
+from pyutilkit.timing import Timing
 
 from eulertools.exceptions import (
     InvalidLanguageError,
@@ -32,33 +32,6 @@ class ANSIEscape(StrEnum):
 class Modes(StrEnum):
     TIMING = "timing"
     RUN = "run"
-
-
-@dataclass(frozen=True, slots=True, order=True)
-class Timing:
-    time: Decimal = field(compare=False)
-    unit: str = field(compare=False)
-    nanoseconds: int = field(repr=False)
-
-    @classmethod
-    def from_nanoseconds(cls, nanoseconds: int) -> Self:
-        if nanoseconds < 1000:
-            return cls(time=Decimal(nanoseconds), unit="ns", nanoseconds=nanoseconds)
-        microseconds = nanoseconds / 1000
-        if microseconds < 1000:
-            return cls(
-                time=Decimal(f"{microseconds:.1f}"), unit="µs", nanoseconds=nanoseconds
-            )
-        milliseconds = microseconds / 1000
-        if milliseconds < 1000:
-            return cls(
-                time=Decimal(f"{milliseconds:.1f}"), unit="ms", nanoseconds=nanoseconds
-            )
-        seconds = milliseconds / 1000
-        return cls(time=Decimal(f"{seconds:.2f}"), unit="s", nanoseconds=nanoseconds)
-
-    def __str__(self) -> str:
-        return f"{self.time}{self.unit}"
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -147,7 +120,7 @@ def get_settings() -> dict[str, Any]:
 
 def get_line_timing(line: str) -> tuple[str, int, Timing]:
     prefix, run_id, timing = line.split(maxsplit=2)
-    return prefix, int(run_id), Timing.from_nanoseconds(int(timing) or 1)
+    return prefix, int(run_id), Timing(nanoseconds=int(timing) or 1)
 
 
 def get_line_answer(line: str) -> tuple[str, int, str]:
@@ -206,7 +179,7 @@ def get_average(values: list[Timing]) -> Timing:
     if len(values) >= 3:
         values = sorted(values)[1:-1]
     average_ns = sum(value.nanoseconds for value in values) // len(values)
-    return Timing.from_nanoseconds(average_ns)
+    return Timing(nanoseconds=average_ns)
 
 
 def get_all_languages() -> list[Language]:

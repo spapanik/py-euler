@@ -2,11 +2,12 @@ import subprocess
 import sys
 from itertools import product
 
+from pyutilkit.timing import Timing
+
 from eulertools.exceptions import FailedRunError
 from eulertools.utils import (
     Language,
     Modes,
-    Timing,
     get_answers,
     get_line_answer,
     get_line_timing,
