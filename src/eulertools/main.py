@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
         help="increase the level of verbosity",
     )
 
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     generate_parser = subparsers.add_parser("generate", parents=[parent_parser])
     language_specific(generate_parser)
@@ -75,43 +75,39 @@ def parse_args() -> argparse.Namespace:
     problem_specific(statement_parser)
     statement_parser.add_argument("-s", "--show-hints", action="store_true")
 
-    options = parser.parse_args()
-    if options.verbosity > 0:
+    args = parser.parse_args()
+    if args.verbosity > 0:
         sys.tracebacklimit = 1000
-    if hasattr(options, "languages"):
-        options.languages = filter_languages(options.languages)
-        options.problems = filter_problems(options.problems, options.languages)
-    elif hasattr(options, "problems"):
-        options.problems = filter_problems(options.problems)
-    return options
+    if hasattr(args, "languages"):
+        args.languages = filter_languages(args.languages)
+        args.problems = filter_problems(args.problems, args.languages)
+    elif hasattr(args, "problems"):
+        args.problems = filter_problems(args.problems)
+
+    return args
 
 
 def main() -> None:
-    options = parse_args()
-    match options.command:
+    args = parse_args()
+    match args.subcommand:
         case "generate":
-            Generate(options.languages, options.problems).run()
+            Generate(args.languages, args.problems).run()
         case "run":
             Run(
-                options.languages,
-                options.problems,
-                options.verbosity,
-                run_update=options.update,
+                args.languages, args.problems, args.verbosity, run_update=args.update
             ).run()
         case "time":
             Time(
-                options.languages,
-                options.problems,
-                options.times,
-                options.verbosity,
-                run_update=options.update,
-                append_new=options.append,
+                args.languages,
+                args.problems,
+                args.times,
+                args.verbosity,
+                run_update=args.update,
+                append_new=args.append,
             ).run()
         case "test":
-            Test(
-                options.languages, options.problems, options.times, options.verbosity
-            ).run()
+            Test(args.languages, args.problems, args.times, args.verbosity).run()
         case "compare":
-            Compare(options.languages, options.problems).run()
+            Compare(args.languages, args.problems).run()
         case "statement":
-            Statement(options.problems, show_hints=options.show_hints).run()
+            Statement(args.problems, show_hints=args.show_hints).run()
