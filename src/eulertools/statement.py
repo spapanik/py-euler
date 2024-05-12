@@ -1,4 +1,6 @@
-from eulertools.utils import ANSIEscape, get_statement
+from pyutilkit.term import SGRCodes, SGRString
+
+from eulertools.utils import get_statement
 
 
 class Statement:
@@ -13,11 +15,11 @@ class Statement:
     def show_statement(self, problem: str) -> None:
         statement = get_statement(problem)["common"]
         if title := statement.get("title", ""):
-            print(ANSIEscape.OKGREEN, title, ANSIEscape.ENDC, sep="")
-            print(ANSIEscape.OKGREEN, "~" * len(title), ANSIEscape.ENDC, sep="")
+            print(SGRString(title, params=[SGRCodes.GREEN]))
+            print(SGRString("~" * len(title), params=[SGRCodes.GREEN]))
         print(statement["description"].strip())
         if self.show_hints and (hint := statement.get("hint")):
-            print("")
-            print(ANSIEscape.OKBLUE, "Hint", ANSIEscape.ENDC, sep="")
-            print(ANSIEscape.OKBLUE, "~" * len("Hint"), ANSIEscape.ENDC, sep="")
+            print()
+            print(SGRString(title, params=[SGRCodes.BLUE]))
+            print(SGRString("~" * len(title), params=[SGRCodes.BLUE]))
             print(hint.strip())

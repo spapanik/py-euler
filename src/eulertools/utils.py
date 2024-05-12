@@ -19,16 +19,6 @@ TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 
 
 @unique
-class ANSIEscape(StrEnum):
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    FAIL = "\033[31m"
-    OKGREEN = "\033[32m"
-    OKBLUE = "\033[34m"
-    WARNING = "\033[33m"
-
-
-@unique
 class Modes(StrEnum):
     TIMING = "timing"
     RUN = "run"

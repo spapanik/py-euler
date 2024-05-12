@@ -1,8 +1,9 @@
 from itertools import product
 
+from pyutilkit.term import SGRCodes, SGRString
+
 from eulertools.run import Run
 from eulertools.utils import (
-    ANSIEscape,
     Language,
     Modes,
     get_average,
@@ -76,8 +77,8 @@ class Time:
             title = f"Timing {language.name}/{problem}/{key}..."
             if run_index or key_index:
                 print()
-            print(ANSIEscape.OKGREEN, title, ANSIEscape.ENDC, sep="")
-            print(ANSIEscape.OKGREEN, "~" * len(title), ANSIEscape.ENDC, sep="")
+            print(SGRString(title, params=[SGRCodes.GREEN]))
+            print(SGRString("~" * len(title), params=[SGRCodes.GREEN]))
             if old_timing:
                 print(f"🟤 Old timing: {old_timing}")
             prefix = (
