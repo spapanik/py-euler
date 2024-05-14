@@ -30,8 +30,6 @@ Please note that `eulertools` requires Python 3.11 or higher. Please ensure
 that your system is using the correct Python version. If not,
 consider using a tool like [pyenv] to create a shell with the required Python version.
 
-## Useful Links
-
--   [pip]: https://pip.pypa.io/en/stable/
--   [pipx]: https://pypa.github.io/pipx/
--   [pyenv]: https://github.com/pyenv/pyenv
+[pip]: https://pip.pypa.io/en/stable/
+[pipx]: https://pypa.github.io/pipx/
+[pyenv]: https://github.com/pyenv/pyenv

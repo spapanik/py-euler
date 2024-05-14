@@ -2,15 +2,17 @@
 
 `eulertools` can be invoked from everywhere inside the project, as it
 recursively looks for the project root. The project root is marked by
-the existence of a `.euler` directory. The required files and directories are:
+the existence of a `.euler` directory. The required files and directories
+inside it are:
 
--   `.euler/`
 -   `.euler/euler.toml`
 -   `.euler/statements/<problem_name>.toml` for every problem
 
+The problem name
+
 ## `euler.toml`
 
-`euler.toml` is a special file, that keeps the language information. It should be placed
+The project can be configured using a TOML file, called `euler.toml`,
 inside the `.euler` directory.
 
 Each language is a section `[language.<language_name>]`, with the
@@ -43,8 +45,9 @@ Optionally, there is a section called `problems`, that allows to pass the proble
 format = "p{:0>4s}"
 ```
 
-With the following config, if passing the string `p0020` to the `-l` flag in the cli command is desired,
-it can be abbreviated to `0020`, or even just `20`.
+With this configuration, instead of passing the full problem name (e.g., `p0020`)
+to the `-p` flag in the CLI command, you can abbreviate it to `0020`,
+or even just `20`.
 
 ## Problem runner
 
@@ -55,16 +58,15 @@ following positional arguments:
 user@localhost $ <runner> <problem_name> <times>
 ```
 
-It should run the problem named `problem_name` for `<times>` times. Each run should return exactly
-k pair of lines, each pair having the following format:
+This command runs the problem named `problem_name` `<times>` times.
+It expects that each run returns a pair of lines in the following format:
 
 ```console linenums="1"
 Time <response_id> <timing in ns>
 Answer <response_id> <answer>
 ```
 
-The response_id is used to differentiate between different test-cases for the same problem, so if you don't need that,
-you can hard-code a specific value, eg `1`.
+The `response_id` is used to differentiate between different test cases.
 
 A simple program runner in python can look like:
 
