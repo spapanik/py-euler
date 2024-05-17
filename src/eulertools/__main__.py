@@ -2,13 +2,13 @@ import argparse
 import sys
 
 from eulertools.__version__ import __version__
-from eulertools.compare import Compare
-from eulertools.generate import Generate
-from eulertools.run import Run
-from eulertools.statement import Statement
-from eulertools.test import Test
-from eulertools.time import Time
-from eulertools.utils import filter_languages, filter_problems
+from eulertools.lib.utils import filter_languages, filter_problems
+from eulertools.subcommands.compare import Compare
+from eulertools.subcommands.generate import Generate
+from eulertools.subcommands.run import Run
+from eulertools.subcommands.statement import Statement
+from eulertools.subcommands.test import Test
+from eulertools.subcommands.time import Time
 
 sys.tracebacklimit = 0
 

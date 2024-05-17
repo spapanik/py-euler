@@ -1,6 +1,6 @@
 from pyutilkit.term import SGRCodes, SGRString
 
-from eulertools.utils import get_statement
+from eulertools.lib.utils import get_statement
 
 
 class Statement:

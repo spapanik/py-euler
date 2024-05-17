@@ -150,7 +150,7 @@ classifiers = [
 ]
 
 [tool.poetry.scripts]
-euler = "eulertools.main:main"
+euler = "eulertools.__main__:main"
 
 [tool.poetry.dependencies]
 # python version

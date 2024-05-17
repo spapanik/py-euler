@@ -1,7 +1,7 @@
 from itertools import product
 
-from eulertools.run import Run
-from eulertools.utils import Language, Modes, get_solution
+from eulertools.lib.utils import Language, Modes, get_solution
+from eulertools.subcommands.run import Run
 
 
 class Test:

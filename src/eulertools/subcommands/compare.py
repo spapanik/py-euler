@@ -1,6 +1,6 @@
 from itertools import chain
 
-from eulertools.utils import Language, get_all_keyed_problems, get_timings
+from eulertools.lib.utils import Language, get_all_keyed_problems, get_timings
 
 
 class Compare:

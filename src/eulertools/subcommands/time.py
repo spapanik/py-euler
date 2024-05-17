@@ -2,8 +2,7 @@ from itertools import product
 
 from pyutilkit.term import SGRCodes, SGRString
 
-from eulertools.run import Run
-from eulertools.utils import (
+from eulertools.lib.utils import (
     Language,
     Modes,
     get_average,
@@ -11,6 +10,7 @@ from eulertools.utils import (
     get_timings,
     update_timings,
 )
+from eulertools.subcommands.run import Run
 
 
 class Time:

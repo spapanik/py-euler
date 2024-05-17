@@ -4,8 +4,8 @@ from itertools import product
 
 from pyutilkit.timing import Timing
 
-from eulertools.exceptions import FailedRunError
-from eulertools.utils import (
+from eulertools.lib.exceptions import FailedRunError
+from eulertools.lib.utils import (
     Language,
     Modes,
     get_answers,

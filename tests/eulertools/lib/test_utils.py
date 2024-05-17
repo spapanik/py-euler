@@ -1,7 +1,7 @@
 import pytest
 from pyutilkit.timing import Timing
 
-from eulertools import utils
+from eulertools.lib import utils
 
 
 @pytest.mark.parametrize(

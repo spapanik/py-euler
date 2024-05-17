@@ -9,7 +9,7 @@ from typing import Any, Self
 from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
 
-from eulertools.exceptions import (
+from eulertools.lib.exceptions import (
     InvalidLanguageError,
     InvalidProblemError,
     MissingProjectRootError,
@@ -182,7 +182,7 @@ def get_all_problems(languages: list[Language] | None = None) -> list[str]:
     if languages is None:
         languages = get_all_languages()
     return sorted(
-        file.stem
+        get_statement(file.stem).get("common", {}).get("name", file.stem)
         for file in statement_dir.iterdir()
         if any(
             get_statement(file.stem).get(language.name) is not None

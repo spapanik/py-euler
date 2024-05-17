@@ -1,6 +1,6 @@
 import jinja2
 
-from eulertools.utils import Language, get_context, get_solution, get_template
+from eulertools.lib.utils import Language, get_context, get_solution, get_template
 
 
 class Generate:
