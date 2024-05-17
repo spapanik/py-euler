@@ -166,10 +166,11 @@ def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) ->
 
 
 def get_average(values: list[Timing]) -> Timing:
+    if not values:
+        return Timing()
     if len(values) >= 3:
         values = sorted(values)[1:-1]
-    average_ns = sum(value.nanoseconds for value in values) // len(values)
-    return Timing(nanoseconds=average_ns)
+    return sum(values, start=Timing()) // len(values)
 
 
 def get_all_languages() -> list[Language]:
