@@ -24,7 +24,14 @@ following fields:
     of the language solution. Defaults to `./<language_name>`
 -   runner: the path (relative to the project root) of the solution runner
 
+There is a section called `$meta`, that allows to add some info for `eulertools` themselves.
+At the moment, the only field that is used is `__version__`, and specifies the min `eulertools`
+version to be used.
+
 ```toml linenums="1" title="euler.toml"
+["$meta"]
+version = "3.0"
+
 [languages.java]
 runner = "java/out/release/runner"
 
@@ -37,17 +44,6 @@ extension = "cpp"
 path = "cpp"
 runner = "cpp/cli/runner"
 ```
-
-Optionally, there is a section called `problems`, that allows to pass the problems as arguments to the cli commands in a more user-friendly way.
-
-```toml linenums="1" title="euler.toml"
-[languages]
-format = "p{:0>4s}"
-```
-
-With this configuration, instead of passing the full problem name (e.g., `p0020`)
-to the `-p` flag in the CLI command, you can abbreviate it to `0020`,
-or even just `20`.
 
 ## Problem runner
 
@@ -106,6 +102,7 @@ For `euler statement`, the following toml tables are required:
 
 ```toml title="p0001.toml"
 [common]
+id = "1"
 title = "Two Sum"
 description = """
 Given an array of integers, return indices of the two numbers such that they

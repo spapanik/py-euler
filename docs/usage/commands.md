@@ -22,17 +22,17 @@ Optional arguments:
 -   -p/--problems [PROBLEM ...]
 
 ```console title="compare"
-user@localhost $ euler compare -p p0003 p0107 -l nim python
-┌─────────┬─────────┬─────────┐
-│ problem │   nim   │  python │
-├─────────┼─────────┼─────────┤
-│  p0003/1│   10.1µs│  249.5µs│
-│  p0003/2│     85ns│    1.5µs│
-│  p0003/3│    171ns│    2.7µs│
-│  p0003/4│  106.7µs│    2.7ms│
-├─────────┼─────────┼─────────┤
-│  p0107/1│      N/A│  832.5µs│
-└─────────┴─────────┴─────────┘
+user@localhost $ euler compare -p 3 107 -l nim python
+┌─────────┬─────────┬─────────┬─────────┐
+│ problem │    id   │   nim   │  python │
+├─────────┼─────────┼─────────┼─────────┤
+│        3│        1│   10.1µs│  249.5µs│
+│        3│        2│     85ns│    1.5µs│
+│        3│        3│    171ns│    2.7µs│
+│        3│        4│  106.7µs│    2.7ms│
+├─────────┼─────────┼─────────┼─────────┤
+│      107│        1│      N/A│  832.5µs│
+└─────────┴─────────┴─────────┴─────────┘
 ```
 
 ## Generate
@@ -57,22 +57,22 @@ Optional arguments:
 -   -u/--update
 
 ```console title="run"
-user@localhost $ euler run -l rust java -p p0001 p0002
-🟢 Running java/p0001/1... 233168
-🟢 Running java/p0001/2... 23331668
-🟢 Running java/p0001/3... 23
-🟢 Running java/p0001/4... 52492500
-🟢 Running java/p0002/1... 4613732
-🟢 Running java/p0002/2... 19544084
-🟢 Running java/p0002/3... 350704366
-🟢 Running rust/p0001/1... 233168
-🟢 Running rust/p0001/2... 23331668
-🟢 Running rust/p0001/3... 23
-🟢 Running rust/p0001/4... 52492500
-🟢 Running rust/p0002/1... 4613732
-🟢 Running rust/p0002/2... 19544084
-🔴 Running rust/p0002/3... expected: 350704366, got: 44
-🟠 Running rust/p0002/4... new response: 1089154
+user@localhost $ euler run -l rust java -p 1 2
+🟢 Running java // 1 // 1... 233168
+🟢 Running java // 1 // 2... 23331668
+🟢 Running java // 1 // 3... 23
+🟢 Running java // 1 // 4... 52492500
+🟢 Running java // 2 // 1... 4613732
+🟢 Running java // 2 // 2... 19544084
+🟢 Running java // 2 // 3... 350704366
+🟢 Running rust // 1 // 1... 233168
+🟢 Running rust // 1 // 2... 23331668
+🟢 Running rust // 1 // 3... 23
+🟢 Running rust // 1 // 4... 52492500
+🟢 Running rust // 2 // 1... 4613732
+🟢 Running rust // 2 // 2... 19544084
+🔴 Running rust // 2 // 3... expected: 350704366, got: 44
+🟠 Running rust // 2 // 4... new response: 1089154
 RuntimeError: Some tests failed
 ```
 
@@ -101,11 +101,11 @@ This will run the problem for \<TIMES\> times and it will check if all of them m
 the saved ones.
 
 ```console title="test"
-user@localhost $ euler test -p p0001 -l java
-🟢 Running java/p0001/1... 233168
-🔴 Running java/p0001/2... Not deterministic answer.
-🟢 Running java/p0001/3... 23
-🟢 Running java/p0001/4... 52492500
+user@localhost $ euler test -p 1 -l java
+🟢 Running java // 1 // 1... 233168
+🔴 Running java // 1 // 2... Not deterministic answer.
+🟢 Running java // 1 // 3... 23
+🟢 Running java // 1 // 4... 52492500
 RuntimeError: Some tests failed
 ```
 
@@ -123,7 +123,7 @@ Optional arguments:
 -   -s/--show-hints
 
 ```console title="statement"
-user@localhost $ euler-dev statement -p p0001 -s
+user@localhost $ euler-dev statement -p 1 -s
 Two Sum
 ~~~~~~~
 Given an array of integers, return indices of the two numbers such that they
@@ -148,7 +148,7 @@ Optional arguments:
 -   -u/--update
 
 ```console title="time"
-user@localhost $ euler time -l python -t 3 -u -p p0074 -vvvv
+user@localhost $ euler time -l python -t 3 -u -p 74 -vvvv
 Time 1 1097407458
 Answer 1 402
 Time 1 1093154930
@@ -156,8 +156,8 @@ Answer 1 402
 Time 1 1112696508
 Answer 1 402
 
-Timing python/p0074/1...
-~~~~~~~~~~~~~~~~~~~~~~~~
+Timing python // 74 // 1...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 🟤 Old timing: 1.11s
 🟢 New timing: 1.10s
     ⏱  New timings:
