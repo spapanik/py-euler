@@ -29,6 +29,7 @@ class Language:
     name: str
     extension: str = field(repr=False, compare=False)
     path: Path = field(repr=False, compare=False)
+    solutions_path: Path = field(repr=False, compare=False)
     runner: Path = field(repr=False, compare=False)
 
     @classmethod
@@ -36,11 +37,14 @@ class Language:
         project_root = _get_project_root()
         settings = get_settings()
         language = settings["languages"][name]
+        path = project_root.joinpath(language.get("path", name))
+        solutions = language.get("solutions", "src/solutions")
         return cls(
             name=name,
             extension=language.get("extension", name),
-            path=project_root.joinpath(language.get("path", name)),
-            runner=project_root.joinpath(language["runner"]),
+            path=path,
+            runner=path.joinpath(language["runner"]),
+            solutions_path=path.joinpath(solutions),
         )
 
     def get_settings_root(self) -> Path:
@@ -50,6 +54,13 @@ class Language:
         if not path.exists():
             path.mkdir(parents=True)
         return path
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class Problem:
+    id: str
+    statement: Path
+    path: Path
 
 
 def _get_project_root() -> Path:
@@ -88,20 +99,21 @@ def _get_statements_dir() -> Path:
     return _get_settings_root().joinpath("statements")
 
 
-def _get_statement(problem: str) -> Path:
-    return _get_statements_dir().joinpath(f"{problem}.toml")
-
-
 def get_template(language: Language) -> Path:
     return language.get_settings_root().joinpath("solution.jinja")
 
 
-def get_solution(language: Language, problem: str) -> Path:
-    return language.path.joinpath("src", "solutions", f"{problem}.{language.extension}")
+def get_solution(language: Language, problem: Problem) -> Path:
+    suffix = f".{language.extension}"
+    return language.solutions_path.joinpath(problem.path).with_suffix(suffix)
 
 
-def get_statement(problem: str) -> dict[str, Any]:
-    return ConfigParser([_get_statement(problem)]).data
+def get_config(path: Path) -> dict[str, Any]:
+    return ConfigParser([path]).data
+
+
+def get_statement(problem: Problem) -> dict[str, Any]:
+    return ConfigParser([problem.statement]).data
 
 
 def get_settings() -> dict[str, Any]:
@@ -140,9 +152,9 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
     return output
 
 
-def get_context(language: Language, problem: str) -> dict[str, str]:
+def get_context(language: Language, problem: Problem) -> dict[str, str]:
     statement = get_statement(problem)
-    output = {"problem": problem}
+    output = {"problem": problem.id}
     output |= statement.get(language.name, {})
     return output
 
@@ -178,18 +190,26 @@ def get_all_languages() -> list[Language]:
     return sorted(Language.from_settings(language) for language in languages)
 
 
-def get_all_problems(languages: list[Language] | None = None) -> list[str]:
+def get_all_problems(languages: list[Language] | None = None) -> dict[str, Problem]:
     statement_dir = _get_statements_dir()
     if languages is None:
         languages = get_all_languages()
-    return sorted(
-        get_statement(file.stem).get("common", {}).get("name", file.stem)
-        for file in statement_dir.iterdir()
-        if any(
-            get_statement(file.stem).get(language.name) is not None
-            for language in languages
-        )
-    )
+
+    output = {}
+    for file in sorted(statement_dir.rglob("*")):
+        if not file.is_file():
+            continue
+        statement = get_config(file)
+        if any(statement.get(language.name) is not None for language in languages):
+            path = file.relative_to(statement_dir)
+            id_ = statement["common"].get("id", path.as_posix())
+            problem = Problem(id=id_, statement=file, path=path)
+            if id_ in output:
+                msg = f"Duplicate problem id: {id_}"
+                raise ValueError(msg)
+            output[id_] = problem
+
+    return output
 
 
 def get_all_keyed_problems() -> list[tuple[str, int]]:
@@ -217,22 +237,18 @@ def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
 
 def filter_problems(
     parsed_problems: list[str], languages: list[Language] | None = None
-) -> list[str]:
+) -> list[Problem]:
     all_problems = get_all_problems(languages)
     if not parsed_problems:
-        return sorted(all_problems)
+        return sorted(all_problems.values())
     filtered_problems = []
-    problem_formatter = get_settings().get("problems", {}).get("format", "")
     for problem in parsed_problems:
         if problem not in all_problems:
-            formatted_problem = problem_formatter.format(problem)
-            if formatted_problem in all_problems:
-                filtered_problems.append(formatted_problem)
-                continue
             if languages is None:
-                msg = f"{problem} is not a valid problem for any language"
-                raise InvalidProblemError(msg)
-            msg = f"{problem} is not a valid problem for {', '.join(language.name for language in languages)}"
+                language_names = "any language"
+            else:
+                language_names = ", ".join(language.name for language in languages)
+            msg = f"{problem} is not a valid problem for {language_names}"
             raise InvalidProblemError(msg)
-        filtered_problems.append(problem)
+        filtered_problems.append(all_problems[problem])
     return filtered_problems

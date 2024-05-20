@@ -1,10 +1,10 @@
 from pyutilkit.term import SGRCodes, SGRString
 
-from eulertools.lib.utils import get_statement
+from eulertools.lib.utils import Problem, get_statement
 
 
 class Statement:
-    def __init__(self, problems: list[str], *, show_hints: bool):
+    def __init__(self, problems: list[Problem], *, show_hints: bool):
         self.problems = problems
         self.show_hints = show_hints
 
@@ -12,7 +12,7 @@ class Statement:
         for problem in self.problems:
             self.show_statement(problem)
 
-    def show_statement(self, problem: str) -> None:
+    def show_statement(self, problem: Problem) -> None:
         statement = get_statement(problem)["common"]
         if title := statement.get("title", ""):
             print(SGRString(title, params=[SGRCodes.GREEN]))

@@ -1,10 +1,16 @@
 import jinja2
 
-from eulertools.lib.utils import Language, get_context, get_solution, get_template
+from eulertools.lib.utils import (
+    Language,
+    Problem,
+    get_context,
+    get_solution,
+    get_template,
+)
 
 
 class Generate:
-    def __init__(self, languages: list[Language], problems: list[str]):
+    def __init__(self, languages: list[Language], problems: list[Problem]):
         self.languages = languages
         self.problems = problems
 
@@ -14,7 +20,7 @@ class Generate:
                 self.generate_solution(language, problem)
 
     @staticmethod
-    def generate_solution(language: Language, problem: str) -> None:
+    def generate_solution(language: Language, problem: Problem) -> None:
         template_path = get_template(language)
         solution = get_solution(language, problem)
         context = get_context(language, problem)

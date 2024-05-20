@@ -1,24 +1,28 @@
 from itertools import chain
 
-from eulertools.lib.utils import Language, get_all_keyed_problems, get_timings
+from eulertools.lib.utils import Language, Problem, get_all_keyed_problems, get_timings
 
 
 class Compare:
-    def __init__(self, languages: list[Language], problems: list[str]):
+    def __init__(self, languages: list[Language], problems: list[Problem]):
         self.languages = languages
         self.timings = {language: get_timings(language) for language in languages}
         self.keyed_problems = self.get_keyed_problems(languages, problems)
         self.pad_length = self._pad_length()
 
     def run(self) -> None:
+        labels = [
+            ["problem", "id"],
+            *[[problem, str(key)] for problem, key in self.keyed_problems],
+        ]
         matrix = [
-            ["problem", *(f"{problem}/{key}" for problem, key in self.keyed_problems)],
+            *self.transpose(labels),
             *(self.get_language_timings(language) for language in self.languages),
         ]
         self.print_table(self.transpose(matrix))
 
     def print_table(self, matrix: list[list[str]]) -> None:
-        n = len(self.languages) + 1
+        n = len(self.languages) + 2
         spacing = ["─" * self.pad_length for _ in range(n)]
         top = "┌" + "┬".join(spacing) + "┐"
         mid = "├" + "┼".join(spacing) + "┤"
@@ -56,8 +60,9 @@ class Compare:
         return string.rjust(self.pad_length)
 
     def get_keyed_problems(
-        self, languages: list[Language], problems: list[str]
+        self, languages: list[Language], problems: list[Problem]
     ) -> list[tuple[str, int]]:
+        problem_ids = {problem.id for problem in problems}
         return [
             (problem, key)
             for problem, key in get_all_keyed_problems()
@@ -66,13 +71,13 @@ class Compare:
                 for language in languages
                 for problem_key in self.timings[language].get(problem, {})
             )
-            and problem in problems
+            and problem in problem_ids
         ]
 
     def _pad_length(self) -> int:
         lengths = chain(
             (len(problem) + len(str(key)) for problem, key in self.keyed_problems),
             (len(language.name) for language in self.languages),
-            [len("problem")],
+            [len("problem"), len("id")],
         )
         return max(lengths) + 2

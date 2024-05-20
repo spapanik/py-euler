@@ -5,6 +5,7 @@ from pyutilkit.term import SGRCodes, SGRString
 from eulertools.lib.utils import (
     Language,
     Modes,
+    Problem,
     get_average,
     get_solution,
     get_timings,
@@ -17,7 +18,7 @@ class Time:
     def __init__(
         self,
         languages: list[Language],
-        problems: list[str],
+        problems: list[Problem],
         times: int,
         verbosity: int,
         *,
@@ -42,9 +43,9 @@ class Time:
                 update_timings(language, self.timings[language])
 
     def time_single_problem(
-        self, language: Language, problem: str, run_index: int
+        self, language: Language, problem: Problem, run_index: int
     ) -> None:
-        self.timings[language].setdefault(problem, {})
+        self.timings[language].setdefault(problem.id, {})
         solution = get_solution(language, problem)
         if not solution.exists():
             return
@@ -55,8 +56,8 @@ class Time:
             verbosity=self.verbosity,
             mode=Modes.TIMING,
             times=self.times,
-        ).run()[language][problem]
-        old_timings = self.timings[language][problem]
+        ).run()[language][problem.id]
+        old_timings = self.timings[language][problem.id]
         new_timings = {
             run_id: get_average(timings) for run_id, timings in raw_timings.items()
         }
@@ -73,8 +74,8 @@ class Time:
             else:
                 overall_difference = "🔵"
             if self.run_update or (self.append_new and old_timing is None):
-                self.timings[language][problem][key] = new_timing
-            title = f"Timing {language.name}/{problem}/{key}..."
+                self.timings[language][problem.id][key] = new_timing
+            title = f"Timing {language.name} // {problem.id} // {key}..."
             if run_index or key_index:
                 print()
             print(SGRString(title, params=[SGRCodes.GREEN]))
