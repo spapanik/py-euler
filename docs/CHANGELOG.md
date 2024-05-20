@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Fixed
+
+-   Remove .toml from the default id
+
 ## [3.0.0] - 2024-05-20
 
 ### Changed

@@ -232,7 +232,7 @@ def get_all_problems(languages: list[Language] | None = None) -> dict[str, Probl
         statement = get_config(file)
         if any(statement.get(language.name) is not None for language in languages):
             path = file.relative_to(statement_dir)
-            id_ = statement["common"].get("id", path.as_posix())
+            id_ = statement["common"].get("id", path.with_suffix("").as_posix())
             problem = Problem(id=id_, statement=file, path=path)
             if id_ in output:
                 msg = f"Duplicate problem id: {id_}"
