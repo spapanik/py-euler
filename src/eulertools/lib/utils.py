@@ -9,6 +9,7 @@ from typing import Any, Self
 from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
 
+from eulertools.__version__ import __version__
 from eulertools.lib.exceptions import (
     InvalidLanguageError,
     InvalidProblemError,
@@ -61,6 +62,26 @@ class Problem:
     id: str
     statement: Path
     path: Path
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class Version:
+    major: int
+    minor: int
+    patch: int
+
+    @classmethod
+    def from_string(cls, version: str) -> Version:
+        version = re.sub("[^.0-9].*", "", version)
+        if version.endswith("."):
+            version += "0"
+        while version.count(".") < 2:
+            version += ".0"
+        major, minor, patch, *_ = map(int, version.split("."))
+        return cls(major, minor, patch)
+
+    def __str__(self) -> str:
+        return f"{self.major}.{self.minor}.{self.patch}"
 
 
 def _get_project_root() -> Path:
@@ -117,7 +138,16 @@ def get_statement(problem: Problem) -> dict[str, Any]:
 
 
 def get_settings() -> dict[str, Any]:
-    return ConfigParser([_get_settings()]).data
+    data = ConfigParser([_get_settings()]).data
+    version_string = data.get("$meta", {}).get("version")
+    if version_string is None:
+        msg = "This `euler.toml` is missing a version"
+        raise RuntimeError(msg)
+    min_version = Version.from_string(data["$meta"]["version"])
+    if min_version > Version.from_string(__version__):
+        msg = f"This `euler.toml` requires an eulertools >= v{min_version}"
+        raise RuntimeError(msg)
+    return data
 
 
 def get_line_timing(line: str) -> tuple[str, int, Timing]:
