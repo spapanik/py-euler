@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Fixed
+
+-   Fixed sorting to follow statement order
+
 ## [3.0.1] - 2024-05-20
 
 ### Fixed

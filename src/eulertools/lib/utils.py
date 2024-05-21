@@ -250,7 +250,7 @@ def get_all_keyed_problems() -> list[tuple[str, int]]:
     return sorted(output)
 
 
-def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
+def _filter_languages(parsed_languages: list[str] | None) -> list[Language]:
     all_languages = get_all_languages()
     if parsed_languages is None:
         return all_languages
@@ -264,12 +264,12 @@ def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
     return filtered_languages
 
 
-def filter_problems(
+def _filter_problems(
     parsed_problems: list[str], languages: list[Language] | None = None
 ) -> list[Problem]:
     all_problems = get_all_problems(languages)
     if not parsed_problems:
-        return sorted(all_problems.values())
+        return list(all_problems.values())
     filtered_problems = []
     for problem in parsed_problems:
         if problem not in all_problems:
@@ -281,3 +281,18 @@ def filter_problems(
             raise InvalidProblemError(msg)
         filtered_problems.append(all_problems[problem])
     return filtered_problems
+
+
+def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
+    return sorted(
+        _filter_languages(parsed_languages), key=lambda language: language.name
+    )
+
+
+def filter_problems(
+    parsed_problems: list[str], languages: list[Language] | None = None
+) -> list[Problem]:
+    return sorted(
+        _filter_problems(parsed_problems, languages),
+        key=lambda problem: problem.statement,
+    )
