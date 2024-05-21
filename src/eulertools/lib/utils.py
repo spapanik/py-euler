@@ -28,33 +28,32 @@ class Modes(StrEnum):
 @dataclass(frozen=True, slots=True, order=True)
 class Language:
     name: str
-    extension: str = field(repr=False, compare=False)
+    suffix: str = field(repr=False, compare=False)
     path: Path = field(repr=False, compare=False)
     solutions_path: Path = field(repr=False, compare=False)
+    settings_path: Path = field(repr=False, compare=False)
     runner: Path = field(repr=False, compare=False)
 
     @classmethod
     def from_settings(cls, name: str) -> Self:
         project_root = _get_project_root()
         settings = get_settings()
+        project_settings_root = _get_settings_root()
         language = settings["languages"][name]
-        path = project_root.joinpath(language.get("path", name))
+        relative_path = language.get("path", name)
+        path = project_root.joinpath(relative_path)
         solutions = language.get("solutions", "src/solutions")
+        settings_path = project_settings_root.joinpath(relative_path)
+        extension = language.get("extension", name)
+        suffix = extension if extension.startswith(".") else f".{extension}"
         return cls(
             name=name,
-            extension=language.get("extension", name),
+            suffix=suffix,
             path=path,
             runner=path.joinpath(language["runner"]),
             solutions_path=path.joinpath(solutions),
+            settings_path=settings_path,
         )
-
-    def get_settings_root(self) -> Path:
-        project_root = _get_project_root()
-        project_settings_root = _get_settings_root()
-        path = project_settings_root.joinpath(self.path.relative_to(project_root))
-        if not path.exists():
-            path.mkdir(parents=True)
-        return path
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -110,8 +109,9 @@ def _get_answers() -> Path:
 
 
 def _get_timings(language: Language) -> Path:
-    file = language.get_settings_root().joinpath("timings.txt")
+    file = language.settings_path.joinpath("timings.txt")
     if not file.exists():
+        file.parent.mkdir(parents=True, exist_ok=True)
         file.touch(mode=0o644)
     return file
 
@@ -121,12 +121,11 @@ def _get_statements_dir() -> Path:
 
 
 def get_template(language: Language) -> Path:
-    return language.get_settings_root().joinpath("solution.jinja")
+    return language.settings_path.joinpath("solution.jinja")
 
 
 def get_solution(language: Language, problem: Problem) -> Path:
-    suffix = f".{language.extension}"
-    return language.solutions_path.joinpath(problem.path).with_suffix(suffix)
+    return language.solutions_path.joinpath(problem.path).with_suffix(language.suffix)
 
 
 def get_config(path: Path) -> dict[str, Any]:
