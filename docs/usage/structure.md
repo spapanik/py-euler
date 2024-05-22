@@ -68,12 +68,12 @@ A simple program runner in python can look like:
 
 ```py linenums="1" title="Python runner"
 #!/usr/bin/env python
-import argparse
-import importlib
+from argparse import ArgumentParser, Namespace
+from importlib import import_module
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+def parse_args() -> Namespace:
+    parser = ArgumentParser()
     parser.add_argument("problem")
     parser.add_argument("times", type=int)
     return parser.parse_args()
@@ -84,7 +84,7 @@ def main() -> None:
     times = options.times
     for _ in range(times):
         module = f"solutions.{options.problem}"
-        importlib.import_module(module).run()
+        import_module(module).run()
 
 
 if __name__ == "__main__":
