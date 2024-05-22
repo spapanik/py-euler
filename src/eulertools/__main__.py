@@ -1,6 +1,3 @@
-import argparse
-import sys
-
 from eulertools.lib.parser import parse_args
 from eulertools.subcommands.compare import Compare
 from eulertools.subcommands.generate import Generate
@@ -8,16 +5,6 @@ from eulertools.subcommands.run import Run
 from eulertools.subcommands.statement import Statement
 from eulertools.subcommands.test import Test
 from eulertools.subcommands.time import Time
-
-sys.tracebacklimit = 0
-
-
-def language_specific(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("-l", "--language", nargs="*", dest="languages")
-
-
-def problem_specific(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("-p", "--problem", nargs="*", dest="problems")
 
 
 def main() -> None:

@@ -1,5 +1,5 @@
-import argparse
 import sys
+from argparse import ArgumentParser, Namespace
 
 from eulertools.__version__ import __version__
 from eulertools.lib.utils import filter_languages, filter_problems
@@ -7,16 +7,16 @@ from eulertools.lib.utils import filter_languages, filter_problems
 sys.tracebacklimit = 0
 
 
-def language_specific(parser: argparse.ArgumentParser) -> None:
+def language_specific(parser: ArgumentParser) -> None:
     parser.add_argument("-l", "--language", nargs="*", dest="languages")
 
 
-def problem_specific(parser: argparse.ArgumentParser) -> None:
+def problem_specific(parser: ArgumentParser) -> None:
     parser.add_argument("-p", "--problem", nargs="*", dest="problems")
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
+def parse_args() -> Namespace:
+    parser = ArgumentParser(
         prog="eulertools", description="Competitive programming CLI"
     )
     parser.add_argument(
@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
         help="print the version and exit",
     )
 
-    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser = ArgumentParser(add_help=False)
     parent_parser.add_argument(
         "-v",
         "--verbose",
