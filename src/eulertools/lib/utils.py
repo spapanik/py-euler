@@ -120,8 +120,18 @@ def _get_statements_dir() -> Path:
     return _get_settings_root().joinpath("statements")
 
 
+def _get_templates_dir() -> Path:
+    return _get_settings_root().joinpath("statements")
+
+
 def get_template(language: Language) -> Path:
-    return language.settings_path.joinpath("solution.jinja")
+    template_dir = _get_templates_dir()
+    new_path = template_dir.joinpath(f"{language.name}.jinja")
+    if not new_path.exists():
+        template_dir.mkdir(parents=True, exist_ok=True)
+        old_path = language.settings_path.joinpath("solution.jinja")
+        old_path.rename(new_path)
+    return new_path
 
 
 def get_solution(language: Language, problem: Problem) -> Path:

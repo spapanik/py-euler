@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Changed
+
+-   Change the location of templates, so that they all share a dictionary
+
 ### Fixed
 
 -   Fixed sorting to follow statement order
