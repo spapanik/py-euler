@@ -59,7 +59,8 @@ class Time:
         ).run()[language][problem.id]
         old_timings = self.timings[language][problem.id]
         new_timings = {
-            run_id: get_average(timings) for run_id, timings in raw_timings.items()
+            response_key: get_average(timings)
+            for response_key, timings in raw_timings.items()
         }
         for key_index, key in enumerate(sorted(new_timings)):
             old_timing = old_timings.get(key)

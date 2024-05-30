@@ -63,11 +63,11 @@ class Run:
         timings: dict[int, list[Timing]] = {}
         for line in output.splitlines():
             if line.startswith("Time"):
-                _, run_id, timing = get_line_timing(line)
-                timings.setdefault(run_id, []).append(timing)
+                _, response_key, timing = get_line_timing(line)
+                timings.setdefault(response_key, []).append(timing)
             elif line.startswith("Answer"):
-                _, run_id, answer = get_line_answer(line)
-                actual_answers.setdefault(run_id, set()).add(answer)
+                _, response_key, answer = get_line_answer(line)
+                actual_answers.setdefault(response_key, set()).add(answer)
             else:
                 print(
                     f"🔴 Running {language.name} // {problem.id}... Cannot parse `{line}`.",

@@ -150,25 +150,25 @@ def get_settings() -> dict[str, Any]:
 
 
 def get_line_timing(line: str) -> tuple[str, int, Timing]:
-    prefix, run_id, timing = line.split(maxsplit=2)
-    return prefix, int(run_id), Timing(nanoseconds=int(timing) or 1)
+    prefix, response_key, timing = line.split(maxsplit=2)
+    return prefix, int(response_key), Timing(nanoseconds=int(timing) or 1)
 
 
 def get_line_answer(line: str) -> tuple[str, int, str]:
-    prefix, run_id, *answers = line.split(maxsplit=2)
+    prefix, response_key, *answers = line.split(maxsplit=2)
     try:
         answer = answers.pop()
     except IndexError:
         answer = ""
-    return prefix, int(run_id), answer
+    return prefix, int(response_key), answer
 
 
 def get_answers() -> dict[str, dict[int, str]]:
     answers = _get_answers()
     output: dict[str, dict[int, str]] = {}
     for line in answers.read_text().splitlines():
-        problem, mode_id, answer = get_line_answer(line)
-        output.setdefault(problem, {})[mode_id] = answer
+        problem, response_key, answer = get_line_answer(line)
+        output.setdefault(problem, {})[response_key] = answer
     return output
 
 
@@ -176,8 +176,8 @@ def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
     timings = _get_timings(language)
     output: dict[str, dict[int, Timing]] = {}
     for line in timings.read_text().splitlines():
-        problem, mode_id, timing = get_line_timing(line)
-        output.setdefault(problem, {})[mode_id] = timing
+        problem, response_key, timing = get_line_timing(line)
+        output.setdefault(problem, {})[response_key] = timing
     return output
 
 
@@ -192,18 +192,18 @@ def update_answers(answers: dict[str, dict[int, str]]) -> None:
     answers_path = _get_answers()
     with answers_path.open("w") as file:
         for problem in sorted(answers):
-            for key in sorted(answers[problem]):
-                answer = answers[problem][key]
-                file.write(f"{problem} {key} {answer}\n")
+            for response_key in sorted(answers[problem]):
+                answer = answers[problem][response_key]
+                file.write(f"{problem} {response_key} {answer}\n")
 
 
 def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) -> None:
     timings_path = _get_timings(language)
     with timings_path.open("w") as file:
         for problem in sorted(timings):
-            for key in sorted(timings[problem]):
-                timing = timings[problem][key]
-                file.write(f"{problem} {key} {timing.nanoseconds}\n")
+            for response_key in sorted(timings[problem]):
+                timing = timings[problem][response_key]
+                file.write(f"{problem} {response_key} {timing.nanoseconds}\n")
 
 
 def get_average(values: list[Timing]) -> Timing:

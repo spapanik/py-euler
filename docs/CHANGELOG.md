@@ -109,8 +109,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
--   Runner should return "Time &lt;response_id&gt; &lt;timing in ns&gt;" for timings
--   Runner should return "Answer &lt;response_id&gt; &lt;answer&gt;" for runs
+-   Runner should return "Time &lt;response_key&gt; &lt;timing in ns&gt;" for timings
+-   Runner should return "Answer &lt;response_key&gt; &lt;answer&gt;" for runs
 
 ## [0.4.0] - 2023-05-12
 

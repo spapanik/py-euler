@@ -58,11 +58,11 @@ This command runs the problem named `problem_name` `<times>` times.
 It expects that each run returns a pair of lines in the following format:
 
 ```console linenums="1"
-Time <response_id> <timing in ns>
-Answer <response_id> <answer>
+Time <response_key> <timing in ns>
+Answer <response_key> <answer>
 ```
 
-The `response_id` is used to differentiate between different test cases.
+The `response_key` is used to differentiate between different test cases.
 
 A simple program runner in python can look like:
 
@@ -135,18 +135,18 @@ class Solution:
         pass
 
 
-def proxy({% for arg in args %}{{arg}}: {{types.get(arg)}}, {% endfor %}response_id: int) -> None:
+def proxy({% for arg in args %}{{arg}}: {{types.get(arg)}}, {% endfor %}response_key: int) -> None:
     solution = Solution()
     begin = perf_counter_ns()
     answer = solution.{{method}}({{args|join(", ")}})
     end = perf_counter_ns()
-    print(f"Time {response_id} {end - begin}")
-    print(f"Answer {response_id} {answer}")
+    print(f"Time {response_key} {end - begin}")
+    print(f"Answer {response_key} {answer}")
 
 
 def run() -> None:
-    proxy(..., response_id=1)
-    proxy(..., response_id=1)
+    proxy(..., response_key=1)
+    proxy(..., response_key=1)
 ```
 
 ```toml title="p0001.toml"
@@ -171,5 +171,5 @@ the different test arguments to the actual runner. The `run` can be the only pub
 problem. This will make it easier to have a similar format for all the languages that you'll attempt
 to solve the problem.
 
-The response_id can be anything that contains no spaces, but it's better to use an small integer.
+The response_key can be anything that contains no spaces, but it's better to use an small integer.
 It makes the debugging of a failed case easier, as it's one of the most readable id formats.

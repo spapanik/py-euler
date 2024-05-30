@@ -78,8 +78,8 @@ RuntimeError: Some tests failed
 
 The emojis in front of each line have the following meaning:
 
--   🟢 The answer for this problem and response_id matches the saved one
--   🟠 This is a new problem/response_id combination
+-   🟢 The answer for this problem and response_key matches the saved one
+-   🟠 This is a new problem/response_key combination
 -   🔴 The run didn't produce the same answer as the saved one
 
 Passing the `-u/--update` flag, will update the saved answers with the ones
