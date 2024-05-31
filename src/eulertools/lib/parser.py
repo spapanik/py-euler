@@ -2,7 +2,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 
 from eulertools.__version__ import __version__
-from eulertools.lib.utils import filter_languages, filter_problems
+from eulertools.lib.utils import UpdateMode, filter_languages, filter_problems
 
 sys.tracebacklimit = 0
 
@@ -13,6 +13,21 @@ def language_specific(parser: ArgumentParser) -> None:
 
 def problem_specific(parser: ArgumentParser) -> None:
     parser.add_argument("-p", "--problem", nargs="*", dest="problems")
+
+
+def can_be_updated(parser: ArgumentParser) -> None:
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-a", "--append", action="store_true")
+    group.add_argument("-u", "--update", action="store_true")
+
+
+def update_mode(*, update: bool, append: bool) -> UpdateMode:
+    if update:
+        return UpdateMode.UPDATE
+    if append:
+        return UpdateMode.APPEND
+
+    return UpdateMode.NONE
 
 
 def parse_args() -> Namespace:
@@ -44,15 +59,14 @@ def parse_args() -> Namespace:
     problem_specific(generate_parser)
 
     run_parser = subparsers.add_parser("run", parents=[parent_parser])
-    run_parser.add_argument("-u", "--update", action="store_true")
+    run_parser.add_argument("-t", "--times", type=int, default=1)
+    can_be_updated(run_parser)
     language_specific(run_parser)
     problem_specific(run_parser)
 
     time_parser = subparsers.add_parser("time", parents=[parent_parser])
     time_parser.add_argument("-t", "--times", type=int, default=10)
-    group = time_parser.add_mutually_exclusive_group()
-    group.add_argument("-a", "--append", action="store_true")
-    group.add_argument("-u", "--update", action="store_true")
+    can_be_updated(time_parser)
     language_specific(time_parser)
     problem_specific(time_parser)
 
@@ -72,6 +86,8 @@ def parse_args() -> Namespace:
     args = parser.parse_args()
     if args.verbosity > 0:
         sys.tracebacklimit = 1000
+    if hasattr(args, "update") and hasattr(args, "append"):
+        args.update_mode = update_mode(update=args.update, append=args.append)
     if hasattr(args, "languages"):
         args.languages = filter_languages(args.languages)
         args.problems = filter_problems(args.problems, args.languages)

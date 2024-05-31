@@ -14,7 +14,11 @@ def main() -> None:
             Generate(args.languages, args.problems).run()
         case "run":
             Run(
-                args.languages, args.problems, args.verbosity, run_update=args.update
+                args.languages,
+                args.problems,
+                args.verbosity,
+                args.times,
+                args.update_mode,
             ).run()
         case "time":
             Time(
@@ -22,8 +26,7 @@ def main() -> None:
                 args.problems,
                 args.times,
                 args.verbosity,
-                run_update=args.update,
-                append_new=args.append,
+                args.update_mode,
             ).run()
         case "test":
             Test(args.languages, args.problems, args.times, args.verbosity).run()

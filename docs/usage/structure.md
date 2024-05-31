@@ -120,7 +120,7 @@ For better than O(n^2) complexity, keep a dictionary of the complements.
 `eulertools` can generate new solution files based on a template. In order to use this, the following structure is
 needed.
 
-There should be a `.euler/<language_name>/solution.jinja` file. Also, the `.euler/statements/<problem_name>.toml`
+There should be a `.euler/templates/<language_name>.jinja` file. Also, the `.euler/statements/<problem_name>.toml`
 needs to have a toml table named `<language_name>` to that will be treated as the context of the solution. When the solution
 is generated, it will create a file in the `<language_path>/src/solutions` with the name `<language_name>.<language_extension>`.
 
@@ -171,5 +171,5 @@ the different test arguments to the actual runner. The `run` can be the only pub
 problem. This will make it easier to have a similar format for all the languages that you'll attempt
 to solve the problem.
 
-The response_key can be anything that contains no spaces, but it's better to use an small integer.
+The response_key can be any string that contains no spaces, but it's better to use an small integer.
 It makes the debugging of a failed case easier, as it's one of the most readable id formats.

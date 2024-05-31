@@ -1,10 +1,18 @@
-from itertools import product
+import sys
 
-from eulertools.lib.utils import Language, Modes, Problem, get_solution
+from eulertools.lib.utils import CaseResult, Language, ParseResult, Problem, Summary
 from eulertools.subcommands.run import Run
 
 
 class Test:
+    __slots__ = (
+        "success",
+        "languages",
+        "problems",
+        "times",
+        "verbosity",
+    )
+
     def __init__(
         self,
         languages: list[Language],
@@ -12,24 +20,60 @@ class Test:
         times: int,
         verbosity: int,
     ):
+        self.success = True
         self.languages = languages
         self.problems = problems
         self.times = times
         self.verbosity = verbosity
 
     def run(self) -> None:
-        for language, problem in product(self.languages, self.problems):
-            self.test_single_problem(language, problem)
-
-    def test_single_problem(self, language: Language, problem: Problem) -> None:
-        solution = get_solution(language, problem)
-        if not solution.exists():
-            return
-
-        Run(
-            [language],
-            [problem],
+        runner = Run(
+            self.languages,
+            self.problems,
             verbosity=self.verbosity,
-            mode=Modes.RUN,
             times=self.times,
-        ).run()[language][problem.id]
+        )
+        for language, problem, summary in runner.get_summaries(
+            self.languages, self.problems
+        ):
+            if not summary.problem_successful(language, problem):
+                self.success = False
+            self.print_summary(language, problem, summary)
+        if not self.success:
+            sys.exit(81)
+
+    def print_summary(
+        self, language: Language, problem: Problem, summary: Summary
+    ) -> None:
+        problem_summary = summary.problems[problem]
+        parse_result = problem_summary.result[language]
+        if parse_result == ParseResult.FAILURE:
+            print(
+                f"🔴 Testing {language.name} // {problem.id}... Failed to parse results",
+                file=sys.stderr,
+            )
+            return
+        for case_id, case_summary in sorted(problem_summary.cases.items()):
+            case_key = case_id.case_key
+            result = case_summary.result[language]
+            test_text = f"Testing {language.name} // {problem.id} // {case_key}..."
+            answer = case_summary.answer
+            try:
+                new_answers = case_summary.new_answers[language]
+            except KeyError:
+                new_answer = None
+            else:
+                new_answer = next(iter(new_answers))
+            if result == CaseResult.MISSING_KEY:
+                print(f"🔴 {test_text} Missing answer", file=sys.stderr)
+            elif case_summary.result[language] == CaseResult.NON_DETERMINISTIC:
+                print(f"🔴 {test_text} Not deterministic answer", file=sys.stderr)
+            elif case_summary.result[language] == CaseResult.NEW_RESPONSE:
+                print(f"🟠 {test_text} new response")
+            elif case_summary.result[language] == CaseResult.WRONG_RESPONSE:
+                print(
+                    f"🔴 {test_text} expected: `{answer}`, got: `{new_answer}`",
+                    file=sys.stderr,
+                )
+            elif case_summary.result[language] == CaseResult.SUCCESS:
+                print(f"🟢 {test_text} success")

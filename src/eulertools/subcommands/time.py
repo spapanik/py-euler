@@ -1,106 +1,143 @@
-from itertools import product
-
-from pyutilkit.term import SGRCodes, SGRString
+import sys
 
 from eulertools.lib.utils import (
+    CaseResult,
     Language,
-    Modes,
+    ParseResult,
     Problem,
+    Summary,
+    UpdateMode,
     get_average,
-    get_solution,
-    get_timings,
-    update_timings,
+    update_summary,
 )
 from eulertools.subcommands.run import Run
 
 
 class Time:
+
+    __slots__ = (
+        "success",
+        "languages",
+        "problems",
+        "times",
+        "verbosity",
+        "update_mode",
+    )
+
     def __init__(
         self,
         languages: list[Language],
         problems: list[Problem],
         times: int,
         verbosity: int,
-        *,
-        run_update: bool,
-        append_new: bool,
+        update_mode: UpdateMode,
     ):
+        self.success = True
         self.languages = languages
         self.problems = problems
         self.times = times
         self.verbosity = verbosity
-        self.run_update = run_update
-        self.append_new = append_new
-        self.timings = {language: get_timings(language) for language in languages}
+        self.update_mode = update_mode
 
     def run(self) -> None:
-        for run_index, (language, problem) in enumerate(
-            product(self.languages, self.problems)
+        runner = Run(
+            self.languages, self.problems, verbosity=self.verbosity, times=self.times
+        )
+        for language, problem, summary in runner.get_summaries(
+            self.languages, self.problems
         ):
-            self.time_single_problem(language, problem, run_index)
-        if self.run_update or self.append_new:
-            for language in self.languages:
-                update_timings(language, self.timings[language])
+            if not summary.problem_successful(language, problem):
+                self.success = False
+            self.print_summary(language, problem, summary)
+            if self.update_mode != UpdateMode.NONE:
+                self.prepare_summary(language, problem, summary)
+        if self.update_mode != UpdateMode.NONE:
+            update_summary(summary)
+        if not self.success:
+            sys.exit(81)
 
-    def time_single_problem(
-        self, language: Language, problem: Problem, run_index: int
+    def print_summary(
+        self, language: Language, problem: Problem, summary: Summary
     ) -> None:
-        self.timings[language].setdefault(problem.id, {})
-        solution = get_solution(language, problem)
-        if not solution.exists():
+        problem_summary = summary.problems[problem]
+        parse_result = problem_summary.result[language]
+        if parse_result == ParseResult.FAILURE:
+            print(
+                f"🔴 Timing {language.name} // {problem.id}... Failed to parse results",
+                file=sys.stderr,
+            )
+            return
+        for case_id, case_summary in problem_summary.cases.items():
+            case_key = case_id.case_key
+            time_text = f"Timing {language.name} // {problem.id} // {case_key}..."
+            if case_summary.result.get(language) in {
+                CaseResult.WRONG_RESPONSE,
+                CaseResult.MISSING_KEY,
+                CaseResult.NON_DETERMINISTIC,
+            }:
+                print(f"🔴 {time_text}... Unsuccessful run", file=sys.stderr)
+                continue
+            old_timing = case_summary.timings.get(language)
+            raw_timings = case_summary.new_timings[language]
+            new_timing = get_average(raw_timings)
+
+            if old_timing is None:
+                general_prefix = "🟠"
+                suffix = f"initial timing: {new_timing}"
+            elif old_timing > new_timing:
+                general_prefix = "🟢"
+                suffix = f"timing changed from {old_timing} to {new_timing}"
+            elif old_timing < new_timing:
+                general_prefix = "🔴"
+                suffix = f"timing changed from {old_timing} to {new_timing}"
+            else:
+                general_prefix = "🔵"
+                suffix = f"timing remained unchanged at: {new_timing}"
+            print(
+                f"{general_prefix} {time_text} {suffix if self.verbosity == 0 else ''}"
+            )
+            if self.verbosity > 0:
+                prefix = "    ⏱️"
+                if old_timing:
+                    print(f"{prefix} Old timing: {old_timing}")
+                print(f"{prefix} New timing: {new_timing}")
+                if old_timing is not None:
+                    old_nanoseconds = old_timing.nanoseconds
+                    new_nanoseconds = new_timing.nanoseconds
+                    change = 100 * (old_nanoseconds - new_nanoseconds) / old_nanoseconds
+                    print(f"    {general_prefix} Performance difference: {change:.2f}%")
+                if self.verbosity > 1:
+                    print(f"{prefix} Detailed new timings:")
+                    for i, timing in enumerate(raw_timings):
+                        if old_timing is None:
+                            prefix = "         "
+                        elif timing > old_timing:
+                            prefix = "       ⬆️"
+                        elif timing < old_timing:
+                            prefix = "       ⬇️"
+                        else:
+                            prefix = "       ↔️"
+                        print(f"{prefix} Run {i + 1} took: {timing}")
+
+    def prepare_summary(
+        self, language: Language, problem: Problem, summary: Summary
+    ) -> None:
+        problem_summary = summary.problems[problem]
+        parse_result = problem_summary.result[language]
+        if parse_result == ParseResult.FAILURE:
             return
 
-        raw_timings = Run(
-            [language],
-            [problem],
-            verbosity=self.verbosity,
-            mode=Modes.TIMING,
-            times=self.times,
-        ).run()[language][problem.id]
-        old_timings = self.timings[language][problem.id]
-        new_timings = {
-            response_key: get_average(timings)
-            for response_key, timings in raw_timings.items()
-        }
-        for key_index, key in enumerate(sorted(new_timings)):
-            old_timing = old_timings.get(key)
-            raw_timing = raw_timings[key]
-            new_timing = new_timings[key]
-            if old_timing is None:
-                overall_difference = None
-            elif old_timing < new_timing:
-                overall_difference = "🔴"
-            elif old_timing > new_timing:
-                overall_difference = "🟢"
-            else:
-                overall_difference = "🔵"
-            if self.run_update or (self.append_new and old_timing is None):
-                self.timings[language][problem.id][key] = new_timing
-            title = f"Timing {language.name} // {problem.id} // {key}..."
-            if run_index or key_index:
-                print()
-            print(SGRString(title, params=[SGRCodes.GREEN]))
-            print(SGRString("~" * len(title), params=[SGRCodes.GREEN]))
-            if old_timing:
-                print(f"🟤 Old timing: {old_timing}")
-            prefix = (
-                f"{overall_difference} New" if old_timing is not None else "🔵 Initial"
-            )
-            print(f"{prefix} timing: {new_timing}")
-            if self.verbosity > 0:
-                print("    ⏱️  New timings:")
-                for i, timing in enumerate(raw_timing):
-                    if old_timing is None:
-                        prefix = "🔵"
-                    elif timing > old_timing:
-                        prefix = "⬆️ "
-                    elif timing < old_timing:
-                        prefix = "⬇️ "
-                    else:
-                        prefix = "↔️ "
-                    print(f"       {prefix} Run {i + 1} took: {timing}")
-            if self.verbosity > 1 and old_timing is not None:
-                old_nanoseconds = old_timing.nanoseconds
-                new_nanoseconds = new_timing.nanoseconds
-                change = 100 * (old_nanoseconds - new_nanoseconds) / old_nanoseconds
-                print(f"{overall_difference} Performance difference: {change:.2f}%")
+        for case_summary in problem_summary.cases.values():
+            case_result = case_summary.result[language]
+            if case_result in {
+                CaseResult.MISSING_KEY,
+                CaseResult.NON_DETERMINISTIC,
+            }:
+                continue
+            if (
+                case_result in {CaseResult.SUCCESS, CaseResult.WRONG_RESPONSE}
+                and self.update_mode == UpdateMode.APPEND
+            ):
+                continue
+            new_timing = get_average(case_summary.new_timings[language])
+            case_summary.timings[language] = new_timing

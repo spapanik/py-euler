@@ -23,16 +23,16 @@ Optional arguments:
 
 ```console title="compare"
 user@localhost $ euler compare -p 3 107 -l nim python
-┌─────────┬─────────┬─────────┬─────────┐
-│ problem │    id   │   nim   │  python │
-├─────────┼─────────┼─────────┼─────────┤
-│        3│        1│   10.1µs│  249.5µs│
-│        3│        2│     85ns│    1.5µs│
-│        3│        3│    171ns│    2.7µs│
-│        3│        4│  106.7µs│    2.7ms│
-├─────────┼─────────┼─────────┼─────────┤
-│      107│        1│      N/A│  832.5µs│
-└─────────┴─────────┴─────────┴─────────┘
+┌──────────┬──────────┬─────────┬─────────┐
+│ problem  │ case_key │   nim   │  python │
+├──────────┼──────────┼─────────┼─────────┤
+│     p0003│         1│   10.1µs│  249.5µs│
+│     p0003│         2│     85ns│    1.5µs│
+│     p0003│         3│    171ns│    2.7µs│
+│     p0003│         4│  106.7µs│    2.7ms│
+├──────────┼──────────┼─────────┼─────────┤
+│     p0107│         1│      N/A│  832.5µs│
+└──────────┴──────────┴─────────┴─────────┘
 ```
 
 ## Generate
@@ -58,22 +58,21 @@ Optional arguments:
 
 ```console title="run"
 user@localhost $ euler run -l rust java -p 1 2
-🟢 Running java // 1 // 1... 233168
-🟢 Running java // 1 // 2... 23331668
-🟢 Running java // 1 // 3... 23
-🟢 Running java // 1 // 4... 52492500
-🟢 Running java // 2 // 1... 4613732
-🟢 Running java // 2 // 2... 19544084
-🟢 Running java // 2 // 3... 350704366
-🟢 Running rust // 1 // 1... 233168
-🟢 Running rust // 1 // 2... 23331668
-🟢 Running rust // 1 // 3... 23
-🟢 Running rust // 1 // 4... 52492500
-🟢 Running rust // 2 // 1... 4613732
-🟢 Running rust // 2 // 2... 19544084
-🔴 Running rust // 2 // 3... expected: 350704366, got: 44
-🟠 Running rust // 2 // 4... new response: 1089154
-RuntimeError: Some tests failed
+🟢 Running java // 1 // 1... response: `233168`
+🟢 Running java // 1 // 2... response: `23331668`
+🟢 Running java // 1 // 3... response: `23`
+🟢 Running java // 1 // 4... response: `52492500`
+🟢 Running java // 2 // 1... response: `4613732`
+🟢 Running java // 2 // 2... response: `19544084`
+🟢 Running java // 2 // 3... response: `350704366`
+🟢 Running rust // 1 // 1... response: `233168`
+🟢 Running rust // 1 // 2... response: `23331668`
+🟢 Running rust // 1 // 3... response: `23`
+🟢 Running rust // 1 // 4... response: `52492500`
+🟢 Running rust // 2 // 1... response: `4613732`
+🟢 Running rust // 2 // 2... response: `19544084`
+🔴 Running rust // 2 // 3... expected: `350704366`, got: `44`
+🟠 Running rust // 2 // 4... new response: `1089154`
 ```
 
 The emojis in front of each line have the following meaning:
@@ -102,11 +101,10 @@ the saved ones.
 
 ```console title="test"
 user@localhost $ euler test -p 1 -l java
-🟢 Running java // 1 // 1... 233168
-🔴 Running java // 1 // 2... Not deterministic answer.
-🟢 Running java // 1 // 3... 23
-🟢 Running java // 1 // 4... 52492500
-RuntimeError: Some tests failed
+🟢 Running java // 1 // 1... success
+🔴 Running java // 1 // 2... Not deterministic answer
+🟢 Running java // 1 // 3... success
+🟢 Running java // 1 // 4... success
 ```
 
 The emojis have the same meaning as in run, but now, as it runs every problem twice,
@@ -156,26 +154,23 @@ Answer 1 402
 Time 1 1112696508
 Answer 1 402
 
-Timing python // 74 // 1...
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-🟤 Old timing: 1.11s
-🟢 New timing: 1.10s
+🟢 Timing python // 74 // 1...
+    ⏱ Old timing: 1.11s
+    ⏱ New timing: 1.10s
+    🟢 Performance difference: 0.94%
     ⏱  New timings:
        ⬇  Run 1 took: 1.10s
        ⬇  Run 2 took: 1.09s
        ⬆  Run 3 took: 1.11s
-🟢 Performance difference: 0.94%
 ```
 
-The `-u/--update` flag updates the cached timings, and the emojis in front of each line
-have the following meaning:
+The emojis in front of each line have the following meaning:
 
--   🟤 This is the old timing
+-   🟠 This is a new timing
 -   🟢 This set of runs is overall better than the cached one
--   🔵 This set of runs is the same as the cached one (or there isn't a cached one)
+-   🔵 This set of runs is the same as the cached one
 -   🔴 This set of runs is overall worse than the cached one
 -   ⬇ This specific run is better than the cached one
 -   ⬆ This specific run is worse than the cached one
 
-The `-a/--append` flag only append new timings to the cached timings, and the emojis in front of each line
-have the same meaning as with the `-u/--update` flag.
+The `-u/--update` flag updates the cached timings, and the `-a/--append` flag only append new timings to the cached timings.

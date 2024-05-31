@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import csv
 import re
 from dataclasses import dataclass, field
-from enum import StrEnum, unique
+from enum import StrEnum, auto, unique
 from pathlib import Path
 from typing import Any, Self
 
@@ -16,13 +17,30 @@ from eulertools.lib.exceptions import (
     MissingProjectRootError,
 )
 
+NULL_STRING = "(null)"
 TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 
 
 @unique
-class Modes(StrEnum):
-    TIMING = "timing"
-    RUN = "run"
+class UpdateMode(StrEnum):
+    NONE = auto()
+    APPEND = auto()
+    UPDATE = auto()
+
+
+@unique
+class ParseResult(StrEnum):
+    SUCCESS = auto()
+    FAILURE = auto()
+
+
+@unique
+class CaseResult(StrEnum):
+    SUCCESS = auto()
+    NEW_RESPONSE = auto()
+    WRONG_RESPONSE = auto()
+    MISSING_KEY = auto()
+    NON_DETERMINISTIC = auto()
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -59,8 +77,126 @@ class Language:
 @dataclass(frozen=True, slots=True, order=True)
 class Problem:
     id: str
-    statement: Path
-    path: Path
+    name: str
+    statement: Path = field(repr=False)
+
+    @classmethod
+    def from_name(cls, name: str) -> Self:
+        statement_dir = _get_statements_dir()
+        path = Path(name).with_suffix(".toml")
+        file = statement_dir.joinpath(path)
+        statement = get_config(file)
+        id_ = statement["common"].get("id", path.with_suffix("").as_posix())
+        return cls(id=id_, name=name, statement=file)
+
+    @property
+    def path(self) -> Path:
+        return Path(self.name).with_suffix(".toml")
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class CaseId:
+    problem: Problem
+    case_key: str
+
+
+@dataclass(slots=True, order=True)
+class Summary:
+    problems: dict[Problem, ProblemSummary]
+
+    def get_or_create_problem(self, problem: Problem) -> ProblemSummary:
+        problem_summary = self.problems.get(problem)
+        if problem_summary is None:
+            problem_summary = ProblemSummary(problem=problem, cases={})
+            self.problems[problem] = problem_summary
+        return problem_summary
+
+    def for_csv(self) -> list[dict[str, str]]:
+        return sorted(
+            (case for problem in self.problems.values() for case in problem.for_csv()),
+            key=lambda case: (case["problem"], case["case_key"]),
+        )
+
+    def problem_successful(self, language: Language, problem: Problem) -> bool:
+        problem_summary = self.problems.get(problem)
+        if problem_summary is None:
+            return False
+        if (
+            problem_summary.result.get(language)
+            and problem_summary.result[language] != ParseResult.FAILURE
+        ):
+            return False
+        return any(
+            case.result.get(language)
+            in {
+                CaseResult.WRONG_RESPONSE,
+                CaseResult.MISSING_KEY,
+                CaseResult.NON_DETERMINISTIC,
+            }
+            for case in problem_summary.cases.values()
+        )
+
+    def case_successful(self, language: Language, case_id: CaseId) -> bool:
+        problem = case_id.problem
+        problem_summary = self.problems.get(problem)
+        if problem_summary is None:
+            return False
+        if (
+            problem_summary.result.get(language)
+            and problem_summary.result[language] != ParseResult.FAILURE
+        ):
+            return False
+
+        case_summary = problem_summary.cases.get(case_id)
+        if case_summary is None:
+            return False
+        return case_summary.result.get(language) in {
+            CaseResult.WRONG_RESPONSE,
+            CaseResult.MISSING_KEY,
+            CaseResult.NON_DETERMINISTIC,
+        }
+
+
+@dataclass(slots=True, order=True)
+class ProblemSummary:
+    problem: Problem
+    cases: dict[CaseId, CaseSummary]
+    result: dict[Language, ParseResult] = field(default_factory=dict, repr=False)
+    parse_info: dict[Language, str] = field(default_factory=dict, repr=False)
+
+    def get_or_create_case(self, case_id: CaseId) -> CaseSummary:
+        case_summary = self.cases.get(case_id)
+        if case_summary is None:
+            case_summary = CaseSummary(case_id=case_id, timings={})
+            self.cases[case_id] = case_summary
+        return case_summary
+
+    def for_csv(self) -> list[dict[str, str]]:
+        return [case.for_csv() for case in self.cases.values()]
+
+
+@dataclass(slots=True, order=True)
+class CaseSummary:
+    case_id: CaseId
+    answer: str | None = None
+    timings: dict[Language, Timing] = field(default_factory=dict)
+    result: dict[Language, CaseResult] = field(default_factory=dict, repr=False)
+    new_timings: dict[Language, list[Timing]] = field(default_factory=dict, repr=False)
+    new_answers: dict[Language, set[str]] = field(default_factory=dict, repr=False)
+
+    def for_csv(self) -> dict[str, str]:
+        if self.answer is None:
+            msg = f"Case {self.case_id.case_key} has no answer"
+            raise ValueError(msg)
+        return {
+            "problem": self.case_id.problem.name,
+            "case_key": self.case_id.case_key,
+            "answer": self.answer,
+            **{
+                language.name: str(timing.nanoseconds)
+                for language, timing in self.timings.items()
+            },
+        }
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -101,18 +237,46 @@ def _get_settings() -> Path:
     return _get_settings_root().joinpath("euler.toml")
 
 
-def _get_answers() -> Path:
-    file = _get_settings_root().joinpath("answers.txt")
-    if not file.exists():
-        file.touch(mode=0o644)
-    return file
+def _get_legacy_summary() -> Summary:
+    summary = Summary(problems={})
+    answers = _get_settings_root().joinpath("answers.txt")
+    with answers.open() as file:
+        for line in file:
+            problem_name, case_key, answer = parse_answer_result(line.strip())
+            problem = Problem.from_name(problem_name)
+            problem_summary = summary.get_or_create_problem(problem)
+            case_id = CaseId(problem=problem, case_key=case_key)
+            summary_case = problem_summary.get_or_create_case(case_id)
+            summary_case.answer = answer
+    answers.unlink()
+
+    for language in get_all_languages():
+        timings = language.settings_path.joinpath("timings.txt")
+        with timings.open() as file:
+            for line in file:
+                problem_name, case_key, timing = parse_timing_result(line.strip())
+                problem = Problem.from_name(problem_name)
+                case_id = CaseId(problem=problem, case_key=case_key)
+                case_summary = summary.problems[problem].cases[case_id]
+                case_summary.timings[language] = timing
+        timings.unlink()
+
+    return summary
 
 
-def _get_timings(language: Language) -> Path:
-    file = language.settings_path.joinpath("timings.txt")
+def _create_summary(file: Path) -> None:
+    file.touch(mode=0o644)
+    if _get_settings_root().joinpath("answers.txt").exists():
+        summary = _get_legacy_summary()
+    else:
+        summary = Summary(problems={})
+    update_summary(summary)
+
+
+def _get_summary() -> Path:
+    file = _get_settings_root().joinpath("results.csv")
     if not file.exists():
-        file.parent.mkdir(parents=True, exist_ok=True)
-        file.touch(mode=0o644)
+        _create_summary(file)
     return file
 
 
@@ -121,7 +285,7 @@ def _get_statements_dir() -> Path:
 
 
 def _get_templates_dir() -> Path:
-    return _get_settings_root().joinpath("statements")
+    return _get_settings_root().joinpath("templates")
 
 
 def get_template(language: Language) -> Path:
@@ -159,36 +323,37 @@ def get_settings() -> dict[str, Any]:
     return data
 
 
-def get_line_timing(line: str) -> tuple[str, int, Timing]:
+def parse_timing_result(line: str) -> tuple[str, str, Timing]:
     prefix, response_key, timing = line.split(maxsplit=2)
-    return prefix, int(response_key), Timing(nanoseconds=int(timing) or 1)
+    return prefix, response_key, Timing(nanoseconds=int(timing) or 1)
 
 
-def get_line_answer(line: str) -> tuple[str, int, str]:
+def parse_answer_result(line: str) -> tuple[str, str, str]:
     prefix, response_key, *answers = line.split(maxsplit=2)
     try:
         answer = answers.pop()
     except IndexError:
         answer = ""
-    return prefix, int(response_key), answer
+    return prefix, response_key, answer
 
 
-def get_answers() -> dict[str, dict[int, str]]:
-    answers = _get_answers()
-    output: dict[str, dict[int, str]] = {}
-    for line in answers.read_text().splitlines():
-        problem, response_key, answer = get_line_answer(line)
-        output.setdefault(problem, {})[response_key] = answer
-    return output
-
-
-def get_timings(language: Language) -> dict[str, dict[int, Timing]]:
-    timings = _get_timings(language)
-    output: dict[str, dict[int, Timing]] = {}
-    for line in timings.read_text().splitlines():
-        problem, response_key, timing = get_line_timing(line)
-        output.setdefault(problem, {})[response_key] = timing
-    return output
+def get_summary() -> Summary:
+    results_file = _get_summary()
+    languages = get_all_languages()
+    summary = Summary(problems={})
+    with results_file.open() as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            problem = Problem.from_name(row["problem"])
+            problem_summary = summary.get_or_create_problem(problem)
+            case_id = CaseId(problem=problem, case_key=row["case_key"])
+            case_summary = problem_summary.get_or_create_case(case_id)
+            case_summary.answer = row["answer"]
+            for language in languages:
+                timing = row.get(language.name, NULL_STRING)
+                if timing != NULL_STRING:
+                    case_summary.timings[language] = Timing(nanoseconds=int(timing))
+    return summary
 
 
 def get_context(language: Language, problem: Problem) -> dict[str, str]:
@@ -198,22 +363,21 @@ def get_context(language: Language, problem: Problem) -> dict[str, str]:
     return output
 
 
-def update_answers(answers: dict[str, dict[int, str]]) -> None:
-    answers_path = _get_answers()
-    with answers_path.open("w") as file:
-        for problem in sorted(answers):
-            for response_key in sorted(answers[problem]):
-                answer = answers[problem][response_key]
-                file.write(f"{problem} {response_key} {answer}\n")
-
-
-def update_timings(language: Language, timings: dict[str, dict[int, Timing]]) -> None:
-    timings_path = _get_timings(language)
-    with timings_path.open("w") as file:
-        for problem in sorted(timings):
-            for response_key in sorted(timings[problem]):
-                timing = timings[problem][response_key]
-                file.write(f"{problem} {response_key} {timing.nanoseconds}\n")
+def update_summary(summary: Summary) -> None:
+    fieldnames = [
+        "problem",
+        "case_key",
+        "answer",
+        *(language.name for language in get_all_languages()),
+    ]
+    results_file = _get_summary()
+    with results_file.open("w") as file:
+        writer = csv.DictWriter(
+            file, fieldnames=fieldnames, restval=NULL_STRING, lineterminator="\n"
+        )
+        writer.writeheader()
+        for csv_dict in summary.for_csv():
+            writer.writerow(csv_dict)
 
 
 def get_average(values: list[Timing]) -> Timing:
@@ -238,26 +402,17 @@ def get_all_problems(languages: list[Language] | None = None) -> dict[str, Probl
     for file in sorted(statement_dir.rglob("*")):
         if not file.is_file():
             continue
+        path = file.relative_to(statement_dir)
+        name = path.with_suffix("").as_posix()
+        problem = Problem.from_name(name)
         statement = get_config(file)
         if any(statement.get(language.name) is not None for language in languages):
-            path = file.relative_to(statement_dir)
-            id_ = statement["common"].get("id", path.with_suffix("").as_posix())
-            problem = Problem(id=id_, statement=file, path=path)
-            if id_ in output:
-                msg = f"Duplicate problem id: {id_}"
+            if problem.id in output:
+                msg = f"Duplicate problem id: {problem.id}"
                 raise ValueError(msg)
-            output[id_] = problem
+            output[problem.id] = problem
 
     return output
-
-
-def get_all_keyed_problems() -> list[tuple[str, int]]:
-    output = [
-        (problem, key)
-        for problem, problem_info in get_answers().items()
-        for key in problem_info
-    ]
-    return sorted(output)
 
 
 def _filter_languages(parsed_languages: list[str] | None) -> list[Language]:

@@ -1,114 +1,170 @@
 import subprocess
 import sys
+from collections.abc import Iterator
 from itertools import product
 
-from pyutilkit.timing import Timing
-
-from eulertools.lib.exceptions import FailedRunError
 from eulertools.lib.utils import (
+    CaseId,
+    CaseResult,
     Language,
-    Modes,
+    ParseResult,
     Problem,
-    get_answers,
-    get_line_answer,
-    get_line_timing,
+    Summary,
+    UpdateMode,
     get_solution,
-    update_answers,
+    get_summary,
+    parse_answer_result,
+    parse_timing_result,
+    update_summary,
 )
 
 
 class Run:
+    __slots__ = (
+        "success",
+        "languages",
+        "problems",
+        "times",
+        "verbosity",
+        "update_mode",
+        "summary",
+    )
+
     def __init__(
         self,
         languages: list[Language],
         problems: list[Problem],
         verbosity: int,
-        *,
-        run_update: bool = False,
-        times: int = 1,
-        mode: str = Modes.RUN,
+        times: int,
+        update_mode: UpdateMode = UpdateMode.NONE,
     ):
+        self.success = True
         self.languages = languages
         self.problems = problems
-        self.mode = mode
         self.times = times
         self.verbosity = verbosity
-        self.expected_answers = get_answers()
-        self.run_update = run_update
+        self.update_mode = update_mode
+        self.summary = get_summary()
 
-    def run(self) -> dict[Language, dict[str, dict[int, list[Timing]]]]:
-        output: dict[Language, dict[str, dict[int, list[Timing]]]] = {}
-        for language, problem in product(self.languages, self.problems):
-            timings = self.run_single_problem(language, problem)
-            output.setdefault(language, {})[problem.id] = timings
-        if self.run_update:
-            update_answers(self.expected_answers)
-        return output
+    def run(self) -> None:
+        for language, problem, _ in self.get_summaries(self.languages, self.problems):
+            self.print_summary(language, problem)
+            if not self.summary.problem_successful(language, problem):
+                self.success = False
+            if self.update_mode != UpdateMode.NONE:
+                self.prepare_summary(language, problem)
+        if self.update_mode != UpdateMode.NONE:
+            update_summary(self.summary)
+        if not self.success:
+            sys.exit(81)
 
-    def run_single_problem(
-        self, language: Language, problem: Problem
-    ) -> dict[int, list[Timing]]:
-        solution = get_solution(language, problem)
-        if not solution.exists():
-            return {}
+    def get_summaries(
+        self, languages: list[Language], problems: list[Problem]
+    ) -> Iterator[tuple[Language, Problem, Summary]]:
+        for language, problem in product(languages, problems):
+            solution = get_solution(language, problem)
+            if not solution.exists():
+                continue
+
+            self.run_single_problem(language, problem)
+            yield language, problem, self.summary
+
+    def run_single_problem(self, language: Language, problem: Problem) -> None:
+        problem_summary = self.summary.get_or_create_problem(problem)
+        problem_summary.result[language] = ParseResult.SUCCESS
         raw_output = subprocess.run(
             [language.runner, problem.id, str(self.times)],  # noqa: S603
             capture_output=True,
             check=True,
         )
         output = raw_output.stdout.decode()
+        error = raw_output.stderr.decode()
         if self.verbosity > 3:
-            print(output)
-        actual_answers: dict[int, set[str]] = {}
-        timings: dict[int, list[Timing]] = {}
+            if output:
+                print(output)
+            if error:
+                print(error, file=sys.stderr)
         for line in output.splitlines():
             if line.startswith("Time"):
-                _, response_key, timing = get_line_timing(line)
-                timings.setdefault(response_key, []).append(timing)
+                _, case_key, timing = parse_timing_result(line)
+                case_id = CaseId(problem, case_key)
+                case_summary = problem_summary.get_or_create_case(case_id)
+                case_summary.new_timings.setdefault(language, []).append(timing)
             elif line.startswith("Answer"):
-                _, response_key, answer = get_line_answer(line)
-                actual_answers.setdefault(response_key, set()).add(answer)
+                _, case_key, answer = parse_answer_result(line)
+                case_id = CaseId(problem, case_key)
+                case_summary = problem_summary.get_or_create_case(case_id)
+                case_summary.new_answers.setdefault(language, set()).add(answer)
             else:
-                print(
-                    f"🔴 Running {language.name} // {problem.id}... Cannot parse `{line}`.",
-                    file=sys.stderr,
-                )
-                msg = f"Unsuccessful run of {language.name} // {problem.id}"
-                raise FailedRunError(msg)
-        expected_answers = self.expected_answers.setdefault(problem.id, {})
-        if missing_answers := {
-            answer for answer in expected_answers if answer not in actual_answers
-        }:
+                problem_summary.result[language] = ParseResult.FAILURE
+                problem_summary.parse_info[language] = line
+                return
+        for case_summary in problem_summary.cases.values():
+            new_answers = case_summary.new_answers.get(language, set())
+            if len(new_answers) == 0:
+                case_summary.result[language] = CaseResult.MISSING_KEY
+            elif len(new_answers) > 1:
+                case_summary.result[language] = CaseResult.NON_DETERMINISTIC
+            elif case_summary.answer is None:
+                case_summary.result[language] = CaseResult.NEW_RESPONSE
+            elif case_summary.answer not in new_answers:
+                case_summary.result[language] = CaseResult.WRONG_RESPONSE
+            else:
+                case_summary.result[language] = CaseResult.SUCCESS
+
+    def print_summary(self, language: Language, problem: Problem) -> None:
+        problem_summary = self.summary.problems[problem]
+        parse_result = problem_summary.result[language]
+        if parse_result == ParseResult.FAILURE:
+            parse_info = problem_summary.parse_info[language]
             print(
-                f"🔴 Running {language.name} // {problem.id}... Missing answers with keys {missing_answers}.",
+                f"🔴 Running {language.name} // {problem.id}... Cannot parse `{parse_info}`",
                 file=sys.stderr,
             )
-            msg = f"Unsuccessful run of {language.name} // {problem.id}"
-            raise FailedRunError(msg)
-        success = True
-        for key, values in actual_answers.items():
-            value = values.pop()
-            if len(values) != 0:
-                success = False
+            return
+        for case_id, case_summary in sorted(problem_summary.cases.items()):
+            case_key = case_id.case_key
+            result = case_summary.result[language]
+            run_text = f"Running {language.name} // {problem.id} // {case_key}..."
+            answer = case_summary.answer
+            try:
+                new_answers = case_summary.new_answers[language]
+            except KeyError:
+                new_answer = None
+            else:
+                new_answer = next(iter(new_answers))
+            if result == CaseResult.MISSING_KEY:
+                print(f"🔴 {run_text} Missing answer", file=sys.stderr)
+            elif case_summary.result[language] == CaseResult.NON_DETERMINISTIC:
+                print(f"🔴 {run_text} Not deterministic answer", file=sys.stderr)
+            elif case_summary.result[language] == CaseResult.NEW_RESPONSE:
+                print(f"🟠 {run_text} new response: `{new_answer}`")
+            elif case_summary.result[language] == CaseResult.WRONG_RESPONSE:
                 print(
-                    f"🔴 Running {language.name} // {problem.id} // {key}... Not deterministic answer.",
+                    f"🔴 {run_text} expected: `{answer}`, got: `{new_answer}`",
                     file=sys.stderr,
                 )
-            elif key not in expected_answers:
-                if self.mode != Modes.TIMING:
-                    print(
-                        f"🟠 Running {language.name} // {problem.id} // {key}... new response: {value}"
-                    )
-                expected_answers[key] = value
-            elif value != expected_answers[key]:
-                success = False
-                print(
-                    f"🔴 Running {language.name} // {problem.id} // {key}... expected: {expected_answers[key]}, got: {value}",
-                    file=sys.stderr,
-                )
-            elif self.mode != Modes.TIMING:
-                print(f"🟢 Running {language.name} // {problem.id} // {key}... {value}")
-        if not success:
-            msg = f"Unsuccessful run of {language.name} // {problem.id}"
-            raise FailedRunError(msg)
-        return timings
+            elif case_summary.result[language] == CaseResult.SUCCESS:
+                print(f"🟢 {run_text} response: `{answer}`")
+
+    def prepare_summary(self, language: Language, problem: Problem) -> None:
+        problem_summary = self.summary.problems[problem]
+        parse_result = problem_summary.result[language]
+        if parse_result == ParseResult.FAILURE:
+            return
+
+        for case_summary in problem_summary.cases.values():
+            case_result = case_summary.result[language]
+            if case_result in {
+                CaseResult.SUCCESS,
+                CaseResult.MISSING_KEY,
+                CaseResult.NON_DETERMINISTIC,
+            }:
+                continue
+            if (
+                case_result == CaseResult.WRONG_RESPONSE
+                and self.update_mode == UpdateMode.APPEND
+            ):
+                continue
+            new_answer = next(iter(case_summary.new_answers[language]))
+            case_summary.answer = new_answer

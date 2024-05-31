@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Changed
 
 -   Change the location of templates, so that they all share a dictionary
+-   Change the location of answers and timings, so that they all in the same file
 
 ### Fixed
 
