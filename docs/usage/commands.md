@@ -129,8 +129,8 @@ add up to a specific target.
 You may assume that each input would have exactly one solution, and you may not
 use the same element twice.
 
-Hint
-~~~~
+Hint for Two Sum
+~~~~~~~~~~~~~~~~
 For better than O(n^2) complexity, keep a dictionary of the complements.
 ```
 

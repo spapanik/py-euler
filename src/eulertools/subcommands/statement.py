@@ -12,17 +12,20 @@ class Statement:
 
     def run(self) -> None:
         for problem in self.problems:
-            self.show_statement(problem)
+            self._print_statement(problem)
+
+    def _print_statement(self, problem: Problem) -> None:
+        statement = get_statement(problem)["common"]
+        title = statement.get("title", problem.name)
+        self._print_title(title, sgr_codes=[SGRCodes.GREEN])
+        print(statement["description"].strip())
+        print()
+        if self.show_hints and (hint := statement.get("hint")):
+            self._print_title(f"Hint for {title}", sgr_codes=[SGRCodes.BLUE])
+            print(hint.strip())
             print()
 
-    def show_statement(self, problem: Problem) -> None:
-        statement = get_statement(problem)["common"]
-        if title := statement.get("title", ""):
-            print(SGRString(title, params=[SGRCodes.GREEN]))
-            print(SGRString("~" * len(title), params=[SGRCodes.GREEN]))
-        print(statement["description"].strip())
-        if self.show_hints and (hint := statement.get("hint")):
-            print()
-            print(SGRString(title, params=[SGRCodes.BLUE]))
-            print(SGRString("~" * len(title), params=[SGRCodes.BLUE]))
-            print(hint.strip())
+    @staticmethod
+    def _print_title(title: str, sgr_codes: list[SGRCodes]) -> None:
+        print(SGRString(title, params=sgr_codes))
+        print(SGRString("~" * len(title), params=sgr_codes))
