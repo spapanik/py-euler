@@ -11,7 +11,14 @@ from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
 
 from eulertools.__version__ import __version__
-from eulertools.lib.constants import NULL_STRING, CaseResult, ParseResult
+from eulertools.lib.constants import (
+    ANSWER,
+    CASE_KEY,
+    NULL_STRING,
+    PROBLEM,
+    CaseResult,
+    ParseResult,
+)
 from eulertools.lib.exceptions import (
     InvalidLanguageError,
     InvalidProblemError,
@@ -90,7 +97,7 @@ class Summary:
     def for_csv(self) -> list[dict[str, str]]:
         return sorted(
             (case for problem in self.problems.values() for case in problem.for_csv()),
-            key=lambda case: (case["problem"], case["case_key"]),
+            key=lambda case: (case[PROBLEM], case[CASE_KEY]),
         )
 
     def problem_successful(self, language: Language, problem: Problem) -> bool:
@@ -165,9 +172,9 @@ class CaseSummary:
             msg = f"Case {self.case_id.case_key} has no answer"
             raise ValueError(msg)
         return {
-            "problem": self.case_id.problem.name,
-            "case_key": self.case_id.case_key,
-            "answer": self.answer,
+            PROBLEM: self.case_id.problem.name,
+            CASE_KEY: self.case_id.case_key,
+            ANSWER: self.answer,
             **{
                 language.name: str(timing.nanoseconds)
                 for language, timing in self.timings.items()
@@ -320,11 +327,11 @@ def get_summary() -> Summary:
     with results_file.open() as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            problem = Problem.from_name(row["problem"])
+            problem = Problem.from_name(row[PROBLEM])
             problem_summary = summary.get_or_create_problem(problem)
-            case_id = CaseId(problem=problem, case_key=row["case_key"])
+            case_id = CaseId(problem=problem, case_key=row[CASE_KEY])
             case_summary = problem_summary.get_or_create_case(case_id)
-            case_summary.answer = row["answer"]
+            case_summary.answer = row[ANSWER]
             for language in languages:
                 timing = row.get(language.name, NULL_STRING)
                 if timing != NULL_STRING:
@@ -341,9 +348,9 @@ def get_context(language: Language, problem: Problem) -> dict[str, str]:
 
 def update_summary(summary: Summary) -> None:
     fieldnames = [
-        "problem",
-        "case_key",
-        "answer",
+        PROBLEM,
+        CASE_KEY,
+        ANSWER,
         *(language.name for language in get_all_languages()),
     ]
     results_file = _get_summary()
@@ -432,3 +439,13 @@ def filter_problems(problems: set[str], languages: set[str]) -> list[Problem]:
     return sorted(
         _filter_problems(problems, languages), key=lambda problem: problem.statement
     )
+
+
+def transpose(matrix: list[list[str]]) -> list[list[str]]:
+    return [list(row) for row in zip(*matrix, strict=True)]
+
+
+def format_cell(string: str, cell_length: int, *, is_header: bool) -> str:
+    if is_header:
+        return string.center(cell_length)
+    return f"{string.rjust(cell_length - 1)} "

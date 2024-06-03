@@ -1,6 +1,10 @@
 import re
 from enum import StrEnum, auto, unique
 
+ANSWER = "answer"
+PROBLEM = "problem"
+CASE_KEY = "case_key"
+MISSING = "N/A"
 NULL_STRING = "(null)"
 TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 

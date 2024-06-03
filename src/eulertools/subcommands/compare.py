@@ -1,10 +1,7 @@
-from itertools import chain
+from collections.abc import Iterator
 
-from eulertools.lib.utils import CaseId, Language, Problem, get_summary
-
-PROBLEM = "problem"
-CASE_KEY = "case_key"
-MISSING = "N/A"
+from eulertools.lib.constants import CASE_KEY, MISSING, PROBLEM
+from eulertools.lib.utils import Language, Problem, format_cell, get_summary
 
 
 class Compare:
@@ -19,83 +16,49 @@ class Compare:
     def __init__(self, languages: list[Language], problems: list[Problem]):
         self.languages = languages
         self.problems = problems
-        self.summary = get_summary()
-        self.case_ids = self.get_case_ids()
-        self.pad_length = self._pad_length()
 
     def run(self) -> None:
-        matrix = [
-            *self.transpose(self.labels),
-            *(self.get_language_timings(language) for language in self.languages),
-        ]
-        self.print_table(self.transpose(matrix))
+        self._print_table(self._get_table())
 
     @property
-    def labels(self) -> list[list[str]]:
-        return [
-            [PROBLEM, CASE_KEY],
-            *(
-                [case_id.problem.name, str(case_id.case_key)]
-                for case_id in self.case_ids
-            ),
-        ]
+    def _header(self) -> list[str]:
+        return [PROBLEM, CASE_KEY, *(language.name for language in self.languages)]
 
-    def print_table(self, matrix: list[list[str]]) -> None:
+    @property
+    def _table_rows(self) -> Iterator[list[str]]:
+        summary = get_summary()
+        for problem in self.problems:
+            problem_summary = summary.problems[problem]
+            for case_id, case_summary in problem_summary.cases.items():
+                yield [
+                    case_id.problem.name,
+                    case_id.case_key,
+                    *(
+                        str(case_summary.timings.get(language, MISSING))
+                        for language in self.languages
+                    ),
+                ]
+
+    def _get_table(self) -> list[list[str]]:
+        return [self._header, *self._table_rows]
+
+    def _print_table(self, table: list[list[str]]) -> None:
         n = len(self.languages) + 2
-        spacing = ["─" * self.pad_length for _ in range(n)]
+        cell_length = max(len(cell) for row in table for cell in row) + 2
+        spacing = ["─" * cell_length for _ in range(n)]
         top = "┌" + "┬".join(spacing) + "┐"
         mid = "├" + "┼".join(spacing) + "┤"
         btm = "└" + "┴".join(spacing) + "┘"
         print(top)
-        for i, row in enumerate(matrix):
+        for i, row in enumerate(table):
             if i % 4 == 1:
                 print(mid)
             print(
                 "│",
-                "│".join(self.padded_print(item, heading=(i == 0)) for item in row),
+                "│".join(
+                    format_cell(item, cell_length, is_header=(i == 0)) for item in row
+                ),
                 "│",
                 sep="",
             )
         print(btm)
-
-    def get_language_timings(self, language: Language) -> list[str]:
-        return [
-            language.name,
-            *(
-                str(
-                    self.summary.problems[case_id.problem]
-                    .cases[case_id]
-                    .timings.get(language, MISSING)
-                )
-                for case_id in self.case_ids
-            ),
-        ]
-
-    @classmethod
-    def transpose(cls, matrix: list[list[str]]) -> list[list[str]]:
-        return [list(row) for row in zip(*matrix, strict=True)]
-
-    def padded_print(self, string: str, *, heading: bool) -> str:
-        if heading:
-            return string.center(self.pad_length)
-        return string.rjust(self.pad_length)
-
-    def get_case_ids(self) -> list[CaseId]:
-        return sorted(
-            (
-                case_id
-                for problem_summary in self.summary.problems.values()
-                if problem_summary.problem in self.problems
-                for case_id, case_summary in problem_summary.cases.items()
-                if any(language in case_summary.timings for language in self.languages)
-            ),
-            key=lambda case_id: (case_id.problem.name, case_id.case_key),
-        )
-
-    def _pad_length(self) -> int:
-        lengths = chain(
-            [len(MISSING)],
-            (len(language.name) for language in self.languages),
-            [len(row) for label in self.labels for row in label],
-        )
-        return max(lengths) + 2

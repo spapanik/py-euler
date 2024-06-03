@@ -9,15 +9,14 @@ from eulertools.subcommands.statement import Statement
 )
 @mock.patch("eulertools.subcommands.statement.print", new_callable=mock.MagicMock)
 def test_statement_with_title_and_hint(
-    mock_print: mock.MagicMock, mock_get_statement: mock.MagicMock, problem: Problem
+    mock_print: mock.MagicMock,
+    mock_get_statement: mock.MagicMock,
+    problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {
         "common": {"title": "Title", "description": "Desc", "hint": "Hint"}
     }
-    statement_command = Statement(
-        problems=[problem],
-        show_hints=True,
-    )
+    statement_command = Statement(problems=problems[:1], show_hints=True)
 
     statement_command.run()
     assert mock_print.call_count == 8
@@ -39,15 +38,14 @@ def test_statement_with_title_and_hint(
 )
 @mock.patch("eulertools.subcommands.statement.print", new_callable=mock.MagicMock)
 def test_statement_with_title_but_not_hint(
-    mock_print: mock.MagicMock, mock_get_statement: mock.MagicMock, problem: Problem
+    mock_print: mock.MagicMock,
+    mock_get_statement: mock.MagicMock,
+    problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {
         "common": {"title": "Title", "description": "Desc"}
     }
-    statement_command = Statement(
-        problems=[problem],
-        show_hints=True,
-    )
+    statement_command = Statement(problems=problems[:1], show_hints=True)
 
     statement_command.run()
     assert mock_print.call_count == 4
@@ -65,15 +63,14 @@ def test_statement_with_title_but_not_hint(
 )
 @mock.patch("eulertools.subcommands.statement.print", new_callable=mock.MagicMock)
 def test_statement_without_title_but_with_hint(
-    mock_print: mock.MagicMock, mock_get_statement: mock.MagicMock, problem: Problem
+    mock_print: mock.MagicMock,
+    mock_get_statement: mock.MagicMock,
+    problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {
         "common": {"description": "Desc", "hint": "Hint"}
     }
-    statement_command = Statement(
-        problems=[problem],
-        show_hints=True,
-    )
+    statement_command = Statement(problems=problems[:1], show_hints=True)
 
     statement_command.run()
     assert mock_print.call_count == 8
@@ -95,13 +92,12 @@ def test_statement_without_title_but_with_hint(
 )
 @mock.patch("eulertools.subcommands.statement.print", new_callable=mock.MagicMock)
 def test_statement_without_title_and_hint(
-    mock_print: mock.MagicMock, mock_get_statement: mock.MagicMock, problem: Problem
+    mock_print: mock.MagicMock,
+    mock_get_statement: mock.MagicMock,
+    problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {"common": {"description": "Desc"}}
-    statement_command = Statement(
-        problems=[problem],
-        show_hints=True,
-    )
+    statement_command = Statement(problems=problems[:1], show_hints=True)
 
     statement_command.run()
     assert mock_print.call_count == 4
