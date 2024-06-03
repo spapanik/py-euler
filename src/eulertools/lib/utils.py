@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Self
@@ -368,10 +369,10 @@ def get_all_languages() -> list[Language]:
     return sorted(Language.from_settings(language) for language in languages)
 
 
-def get_all_problems(languages: list[Language] | None = None) -> dict[str, Problem]:
+def get_all_problems(languages: set[str]) -> dict[str, Problem]:
     statement_dir = _get_statements_dir()
-    if languages is None:
-        languages = get_all_languages()
+    if not languages:
+        languages = {language.name for language in get_all_languages()}
 
     output = {}
     for file in sorted(statement_dir.rglob("*")):
@@ -381,7 +382,7 @@ def get_all_problems(languages: list[Language] | None = None) -> dict[str, Probl
         name = path.with_suffix("").as_posix()
         problem = Problem.from_name(name)
         statement = get_config(file)
-        if any(statement.get(language.name) is not None for language in languages):
+        if any(statement.get(language) is not None for language in languages):
             if problem.id in output:
                 msg = f"Duplicate problem id: {problem.id}"
                 raise ValueError(msg)
@@ -390,49 +391,44 @@ def get_all_problems(languages: list[Language] | None = None) -> dict[str, Probl
     return output
 
 
-def _filter_languages(parsed_languages: list[str] | None) -> list[Language]:
+def _filter_languages(parsed_languages: set[str]) -> Iterator[Language]:
     all_languages = get_all_languages()
-    if parsed_languages is None:
-        return all_languages
-    filtered_languages = []
+    if not parsed_languages:
+        yield from all_languages
+        return
+
     language_names = {language.name for language in all_languages}
     for language in parsed_languages:
         if language not in language_names:
             msg = f"{language} is not a valid language"
             raise InvalidLanguageError(msg)
-        filtered_languages.append(Language.from_settings(language))
-    return filtered_languages
+        yield Language.from_settings(language)
 
 
 def _filter_problems(
-    parsed_problems: list[str], languages: list[Language] | None = None
-) -> list[Problem]:
-    all_problems = get_all_problems(languages)
+    parsed_problems: set[str], parsed_languages: set[str]
+) -> Iterator[Problem]:
+    all_problems = get_all_problems(parsed_languages)
     if not parsed_problems:
-        return list(all_problems.values())
-    filtered_problems = []
+        yield from all_problems.values()
+        return
+
     for problem in parsed_problems:
         if problem not in all_problems:
-            if languages is None:
+            if not parsed_languages:
                 language_names = "any language"
             else:
-                language_names = ", ".join(language.name for language in languages)
+                language_names = ", ".join(parsed_languages)
             msg = f"{problem} is not a valid problem for {language_names}"
             raise InvalidProblemError(msg)
-        filtered_problems.append(all_problems[problem])
-    return filtered_problems
+        yield all_problems[problem]
 
 
-def filter_languages(parsed_languages: list[str] | None) -> list[Language]:
+def filter_languages(languages: set[str]) -> list[Language]:
+    return sorted(_filter_languages(languages))
+
+
+def filter_problems(problems: set[str], languages: set[str]) -> list[Problem]:
     return sorted(
-        _filter_languages(parsed_languages), key=lambda language: language.name
-    )
-
-
-def filter_problems(
-    parsed_problems: list[str], languages: list[Language] | None = None
-) -> list[Problem]:
-    return sorted(
-        _filter_problems(parsed_problems, languages),
-        key=lambda problem: problem.statement,
+        _filter_problems(problems, languages), key=lambda problem: problem.statement
     )

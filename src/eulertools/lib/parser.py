@@ -9,11 +9,11 @@ sys.tracebacklimit = 0
 
 
 def language_specific(parser: ArgumentParser) -> None:
-    parser.add_argument("-l", "--language", nargs="*", dest="languages")
+    parser.add_argument("-l", "--language", nargs="*", dest="languages", default=[])
 
 
 def problem_specific(parser: ArgumentParser) -> None:
-    parser.add_argument("-p", "--problem", nargs="*", dest="problems")
+    parser.add_argument("-p", "--problem", nargs="*", dest="problems", default=[])
 
 
 def can_be_updated(parser: ArgumentParser) -> None:
@@ -90,9 +90,12 @@ def parse_args() -> Namespace:
     if hasattr(args, "update") and hasattr(args, "append"):
         args.update_mode = update_mode(update=args.update, append=args.append)
     if hasattr(args, "languages"):
-        args.languages = filter_languages(args.languages)
-        args.problems = filter_problems(args.problems, args.languages)
+        parsed_problems = set(args.problems)
+        parsed_languages = set(args.languages)
+        args.problems = filter_problems(parsed_problems, parsed_languages)
+        args.languages = filter_languages(parsed_languages)
     elif hasattr(args, "problems"):
-        args.problems = filter_problems(args.problems)
+        parsed_problems = set(args.problems)
+        args.problems = filter_problems(parsed_problems, set())
 
     return args
