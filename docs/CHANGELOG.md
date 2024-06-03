@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-05-20
+
 ### Changed
 
 -   Change the location of templates, so that they all share a dictionary
@@ -154,7 +156,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/spapanik/eulertools/compare/v3.0.1...main
+[Unreleased]: https://github.com/spapanik/eulertools/compare/v4.0.0...main
+[4.0.0]: https://github.com/spapanik/eulertools/compare/v3.0.1...v4.0.0
 [3.0.1]: https://github.com/spapanik/eulertools/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/spapanik/eulertools/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/spapanik/eulertools/compare/v2.0.0...v2.1.0
