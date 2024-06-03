@@ -3,14 +3,12 @@ import sys
 from collections.abc import Iterator
 from itertools import product
 
+from eulertools.lib.constants import CaseResult, ParseResult, UpdateMode
 from eulertools.lib.utils import (
     CaseId,
-    CaseResult,
     Language,
-    ParseResult,
     Problem,
     Summary,
-    UpdateMode,
     get_solution,
     get_summary,
     parse_answer_result,

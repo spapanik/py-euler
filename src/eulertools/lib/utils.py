@@ -3,7 +3,6 @@ from __future__ import annotations
 import csv
 import re
 from dataclasses import dataclass, field
-from enum import StrEnum, auto, unique
 from pathlib import Path
 from typing import Any, Self
 
@@ -11,36 +10,12 @@ from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
 
 from eulertools.__version__ import __version__
+from eulertools.lib.constants import NULL_STRING, CaseResult, ParseResult
 from eulertools.lib.exceptions import (
     InvalidLanguageError,
     InvalidProblemError,
     MissingProjectRootError,
 )
-
-NULL_STRING = "(null)"
-TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
-
-
-@unique
-class UpdateMode(StrEnum):
-    NONE = auto()
-    APPEND = auto()
-    UPDATE = auto()
-
-
-@unique
-class ParseResult(StrEnum):
-    SUCCESS = auto()
-    FAILURE = auto()
-
-
-@unique
-class CaseResult(StrEnum):
-    SUCCESS = auto()
-    NEW_RESPONSE = auto()
-    WRONG_RESPONSE = auto()
-    MISSING_KEY = auto()
-    NON_DETERMINISTIC = auto()
 
 
 @dataclass(frozen=True, slots=True, order=True)

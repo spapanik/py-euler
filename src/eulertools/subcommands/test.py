@@ -1,6 +1,7 @@
 import sys
 
-from eulertools.lib.utils import CaseResult, Language, ParseResult, Problem, Summary
+from eulertools.lib.constants import CaseResult, ParseResult
+from eulertools.lib.utils import Language, Problem, Summary
 from eulertools.subcommands.run import Run
 
 

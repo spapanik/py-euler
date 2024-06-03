@@ -2,7 +2,8 @@ import sys
 from argparse import ArgumentParser, Namespace
 
 from eulertools.__version__ import __version__
-from eulertools.lib.utils import UpdateMode, filter_languages, filter_problems
+from eulertools.lib.constants import UpdateMode
+from eulertools.lib.utils import filter_languages, filter_problems
 
 sys.tracebacklimit = 0
 

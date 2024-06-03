@@ -1,15 +1,7 @@
 import sys
 
-from eulertools.lib.utils import (
-    CaseResult,
-    Language,
-    ParseResult,
-    Problem,
-    Summary,
-    UpdateMode,
-    get_average,
-    update_summary,
-)
+from eulertools.lib.constants import CaseResult, ParseResult, UpdateMode
+from eulertools.lib.utils import Language, Problem, Summary, get_average, update_summary
 from eulertools.subcommands.run import Run
 
 
