@@ -39,11 +39,11 @@ class Test:
         ):
             if not summary.success(language, problem):
                 self.success = False
-            self.print_summary(language, problem, summary)
+            self._print_summary(language, problem, summary)
         if not self.success:
             sys.exit(81)
 
-    def print_summary(
+    def _print_summary(
         self, language: Language, problem: Problem, summary: Summary
     ) -> None:
         problem_summary = summary.problems[problem]

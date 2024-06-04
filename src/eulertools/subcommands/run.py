@@ -46,11 +46,11 @@ class Run:
 
     def run(self) -> None:
         for language, problem, _ in self.get_summaries(self.languages, self.problems):
-            self.print_summary(language, problem)
+            self._print_summary(language, problem)
             if not self.summary.success(language, problem):
                 self.success = False
             if self.update_mode != UpdateMode.NONE:
-                self.prepare_summary(language, problem)
+                self._prepare_summary(language, problem)
         if self.update_mode != UpdateMode.NONE:
             update_summary(self.summary)
         if not self.success:
@@ -64,10 +64,10 @@ class Run:
             if not solution.exists():
                 continue
 
-            self.run_single_problem(language, problem)
+            self._run_single_problem(language, problem)
             yield language, problem, self.summary
 
-    def run_single_problem(self, language: Language, problem: Problem) -> None:
+    def _run_single_problem(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
         raw_output = subprocess.run(
@@ -110,7 +110,7 @@ class Run:
             else:
                 case_summary.result[language] = CaseResult.SUCCESS
 
-    def print_summary(self, language: Language, problem: Problem) -> None:
+    def _print_summary(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.problems[problem]
         parse_result = problem_summary.result[language]
         if parse_result == ParseResult.FAILURE:
@@ -145,7 +145,7 @@ class Run:
             elif case_summary.result[language] == CaseResult.SUCCESS:
                 print(f"🟢 {run_text} response: `{answer}`")
 
-    def prepare_summary(self, language: Language, problem: Problem) -> None:
+    def _prepare_summary(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.problems[problem]
         parse_result = problem_summary.result[language]
         if parse_result == ParseResult.FAILURE:
