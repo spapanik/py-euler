@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 -   Fixed return codes for run, test, and time
 
-## [4.0.0] - 2024-05-20
+## [4.0.0] - 2024-06-03
 
 ### Changed
 
