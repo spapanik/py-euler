@@ -119,26 +119,6 @@ class Summary:
             for case in problem_summary.cases.values()
         )
 
-    def case_successful(self, language: Language, case_id: CaseId) -> bool:
-        problem = case_id.problem
-        problem_summary = self.problems.get(problem)
-        if problem_summary is None:
-            return False
-        if (
-            problem_summary.result.get(language)
-            and problem_summary.result[language] != ParseResult.FAILURE
-        ):
-            return False
-
-        case_summary = problem_summary.cases.get(case_id)
-        if case_summary is None:
-            return False
-        return case_summary.result.get(language) in {
-            CaseResult.WRONG_RESPONSE,
-            CaseResult.MISSING_KEY,
-            CaseResult.NON_DETERMINISTIC,
-        }
-
 
 @dataclass(slots=True, order=True)
 class ProblemSummary:
