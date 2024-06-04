@@ -38,7 +38,7 @@ class Time:
         for language, problem, summary in runner.get_summaries(
             self.languages, self.problems
         ):
-            if not summary.problem_successful(language, problem):
+            if not summary.success(language, problem):
                 self.success = False
             self.print_summary(language, problem, summary)
             if self.update_mode != UpdateMode.NONE:

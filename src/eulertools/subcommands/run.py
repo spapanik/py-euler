@@ -47,7 +47,7 @@ class Run:
     def run(self) -> None:
         for language, problem, _ in self.get_summaries(self.languages, self.problems):
             self.print_summary(language, problem)
-            if not self.summary.problem_successful(language, problem):
+            if not self.summary.success(language, problem):
                 self.success = False
             if self.update_mode != UpdateMode.NONE:
                 self.prepare_summary(language, problem)

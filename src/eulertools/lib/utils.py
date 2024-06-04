@@ -100,24 +100,11 @@ class Summary:
             key=lambda case: (case[PROBLEM], case[CASE_KEY]),
         )
 
-    def problem_successful(self, language: Language, problem: Problem) -> bool:
+    def success(self, language: Language, problem: Problem) -> bool:
         problem_summary = self.problems.get(problem)
         if problem_summary is None:
             return False
-        if (
-            problem_summary.result.get(language)
-            and problem_summary.result[language] != ParseResult.FAILURE
-        ):
-            return False
-        return any(
-            case.result.get(language)
-            in {
-                CaseResult.WRONG_RESPONSE,
-                CaseResult.MISSING_KEY,
-                CaseResult.NON_DETERMINISTIC,
-            }
-            for case in problem_summary.cases.values()
-        )
+        return problem_summary.success(language)
 
 
 @dataclass(slots=True, order=True)
@@ -136,6 +123,11 @@ class ProblemSummary:
 
     def for_csv(self) -> list[dict[str, str]]:
         return [case.for_csv() for case in self.cases.values()]
+
+    def success(self, language: Language) -> bool:
+        if self.result.get(language) == ParseResult.FAILURE:
+            return False
+        return all(case.success(language) for case in self.cases.values())
 
 
 @dataclass(slots=True, order=True)
@@ -159,6 +151,13 @@ class CaseSummary:
                 language.name: str(timing.nanoseconds)
                 for language, timing in self.timings.items()
             },
+        }
+
+    def success(self, language: Language) -> bool:
+        return self.result.get(language) not in {
+            CaseResult.WRONG_RESPONSE,
+            CaseResult.MISSING_KEY,
+            CaseResult.NON_DETERMINISTIC,
         }
 
 

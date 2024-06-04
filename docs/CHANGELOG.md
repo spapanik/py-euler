@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Fixed
+
+-   Fixed return codes for run, test, and time
+
 ## [4.0.0] - 2024-05-20
 
 ### Changed
