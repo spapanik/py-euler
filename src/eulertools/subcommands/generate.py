@@ -19,10 +19,10 @@ class Generate:
     def run(self) -> None:
         for problem in self.problems:
             for language in self.languages:
-                self.generate_solution(language, problem)
+                self._generate_solution(language, problem)
 
     @staticmethod
-    def generate_solution(language: Language, problem: Problem) -> None:
+    def _generate_solution(language: Language, problem: Problem) -> None:
         template_path = get_template(language)
         solution = get_solution(language, problem)
         context = get_context(language, problem)

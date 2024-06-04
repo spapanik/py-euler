@@ -61,3 +61,8 @@ def summary(problems: list[Problem], languages: list[Language]) -> Summary:
     case_42_1.timings = {python: Timing(nanoseconds=1400121)}
 
     return summary
+
+
+@pytest.fixture()
+def data_dir() -> Path:
+    return Path(__file__).parent.joinpath("data")
