@@ -79,12 +79,12 @@ def test_generate_one_missing_solution(
     mock_file.write_text = mock_write_text
     mock_get_solution.return_value = mock_file
     mock_get_context.return_value = {}
-    statement_command = Generate(
+    generate_command = Generate(
         languages=languages,
         problems=problems,
     )
 
-    statement_command.run()
+    generate_command.run()
     assert mock_write_text.call_count == 4
     calls = [
         mock.call("Jinja template\n"),
