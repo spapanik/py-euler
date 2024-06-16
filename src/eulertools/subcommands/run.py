@@ -70,18 +70,21 @@ class Run:
     def _run_single_problem(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
-        raw_output = subprocess.run(
+        result = subprocess.run(  # noqa: PLW1510
             [language.runner, problem.id, str(self.times)],  # noqa: S603
             capture_output=True,
-            check=True,
         )
-        output = raw_output.stdout.decode()
-        error = raw_output.stderr.decode()
+        output = result.stdout.decode()
+        error = result.stderr.decode()
         if self.verbosity > 3:
             if output:
                 print(output)
             if error:
                 print(error, file=sys.stderr)
+        if result.returncode != 0:
+            problem_summary.result[language] = ParseResult.FAILURE
+            problem_summary.parse_info[language] = ""
+            return
         for line in output.splitlines():
             if line.startswith("Time"):
                 _, case_key, timing = parse_timing_result(line)

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Fixed
+
+-   Exit code 0 for a problem, fails only this specific problem
+
 ## [4.0.1] - 2024-06-04
 
 ### Fixed
