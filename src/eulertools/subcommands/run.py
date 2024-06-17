@@ -96,6 +96,8 @@ class Run:
                 case_id = CaseId(problem, case_key)
                 case_summary = problem_summary.get_or_create_case(case_id)
                 case_summary.new_answers.setdefault(language, set()).add(answer)
+            elif line.lower().startswith("debug"):
+                print(f"🔍 {line}")
             else:
                 problem_summary.result[language] = ParseResult.FAILURE
                 problem_summary.parse_info[language] = line

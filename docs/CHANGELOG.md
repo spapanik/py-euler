@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+-   Added a way to print debugging lines
+
 ### Fixed
 
 -   Exit code 0 for a problem, fails only this specific problem
