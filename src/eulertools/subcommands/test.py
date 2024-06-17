@@ -1,4 +1,5 @@
 import sys
+from collections.abc import Sequence
 
 from eulertools.lib.constants import CaseResult, ParseResult
 from eulertools.lib.utils import Language, Problem, Summary
@@ -12,6 +13,7 @@ class Test:
         "problems",
         "times",
         "verbosity",
+        "extra",
     )
 
     def __init__(
@@ -20,12 +22,14 @@ class Test:
         problems: list[Problem],
         times: int,
         verbosity: int,
+        extra: Sequence[str] = (),
     ):
         self.success = True
         self.languages = languages
         self.problems = problems
         self.times = times
         self.verbosity = verbosity
+        self.extra = extra
 
     def run(self) -> None:
         runner = Run(
@@ -33,6 +37,7 @@ class Test:
             self.problems,
             verbosity=self.verbosity,
             times=self.times,
+            extra=self.extra,
         )
         for language, problem, summary in runner.get_summaries(
             self.languages, self.problems

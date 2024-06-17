@@ -1,4 +1,5 @@
 import sys
+from collections.abc import Sequence
 
 from eulertools.lib.constants import CaseResult, ParseResult, UpdateMode
 from eulertools.lib.utils import Language, Problem, Summary, get_average, update_summary
@@ -14,6 +15,7 @@ class Time:
         "times",
         "verbosity",
         "update_mode",
+        "extra",
     )
 
     def __init__(
@@ -23,6 +25,7 @@ class Time:
         times: int,
         verbosity: int,
         update_mode: UpdateMode,
+        extra: Sequence[str] = (),
     ):
         self.success = True
         self.languages = languages
@@ -30,10 +33,15 @@ class Time:
         self.times = times
         self.verbosity = verbosity
         self.update_mode = update_mode
+        self.extra = extra
 
     def run(self) -> None:
         runner = Run(
-            self.languages, self.problems, verbosity=self.verbosity, times=self.times
+            self.languages,
+            self.problems,
+            verbosity=self.verbosity,
+            times=self.times,
+            extra=self.extra,
         )
         for language, problem, summary in runner.get_summaries(
             self.languages, self.problems

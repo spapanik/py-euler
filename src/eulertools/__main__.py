@@ -19,6 +19,7 @@ def main() -> None:
                 args.verbosity,
                 args.times,
                 args.update_mode,
+                args.extra,
             ).run()
         case "time":
             Time(
@@ -27,9 +28,12 @@ def main() -> None:
                 args.times,
                 args.verbosity,
                 args.update_mode,
+                args.extra,
             ).run()
         case "test":
-            Test(args.languages, args.problems, args.times, args.verbosity).run()
+            Test(
+                args.languages, args.problems, args.times, args.verbosity, args.extra
+            ).run()
         case "compare":
             Compare(args.languages, args.problems).run()
         case "statement":

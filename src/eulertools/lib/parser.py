@@ -84,7 +84,7 @@ def parse_args() -> Namespace:
     statement_parser.add_argument("-s", "--show-hints", action="store_true")
     problem_specific(statement_parser)
 
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
     if args.verbosity > 0:
         sys.tracebacklimit = 1000
     if hasattr(args, "update") and hasattr(args, "append"):
@@ -97,5 +97,8 @@ def parse_args() -> Namespace:
     elif hasattr(args, "problems"):
         parsed_problems = set(args.problems)
         args.problems = filter_problems(parsed_problems, set())
+    if extra and extra[0] == "--":
+        extra = extra[1:]
+    args.extra = extra
 
     return args

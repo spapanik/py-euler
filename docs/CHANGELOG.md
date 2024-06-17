@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Added
 
 -   Added a way to print debugging lines
+-   Added a way to pass arguments to the runner
 
 ### Fixed
 

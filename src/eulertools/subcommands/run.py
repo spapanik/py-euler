@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from itertools import product
 
 from eulertools.lib.constants import CaseResult, ParseResult, UpdateMode
@@ -26,6 +26,7 @@ class Run:
         "verbosity",
         "update_mode",
         "summary",
+        "extra",
     )
 
     def __init__(
@@ -35,6 +36,7 @@ class Run:
         verbosity: int,
         times: int,
         update_mode: UpdateMode = UpdateMode.NONE,
+        extra: Sequence[str] = (),
     ):
         self.success = True
         self.languages = languages
@@ -43,6 +45,7 @@ class Run:
         self.verbosity = verbosity
         self.update_mode = update_mode
         self.summary = get_summary()
+        self.extra = extra
 
     def run(self) -> None:
         for language, problem, _ in self.get_summaries(self.languages, self.problems):
@@ -71,7 +74,7 @@ class Run:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
         result = subprocess.run(  # noqa: PLW1510
-            [language.runner, problem.id, str(self.times)],  # noqa: S603
+            [language.runner, problem.id, str(self.times), *self.extra],  # noqa: S603
             capture_output=True,
         )
         output = result.stdout.decode()
