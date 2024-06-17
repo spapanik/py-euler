@@ -20,9 +20,13 @@ from eulertools.lib.constants import (
     ParseResult,
 )
 from eulertools.lib.exceptions import (
+    DuplicateProblemError,
+    InternalError,
     InvalidLanguageError,
     InvalidProblemError,
+    InvalidVersionError,
     MissingProjectRootError,
+    MissingVersionError,
 )
 
 
@@ -141,8 +145,8 @@ class CaseSummary:
 
     def for_csv(self) -> dict[str, str]:
         if self.answer is None:
-            msg = f"Case {self.case_id.case_key} has no answer"
-            raise ValueError(msg)
+            info = [f"Case {self.case_id.case_key} has no answer"]
+            raise InternalError(info)
         return {
             PROBLEM: self.case_id.problem.name,
             CASE_KEY: self.case_id.case_key,
@@ -185,8 +189,7 @@ def _get_project_root() -> Path:
     cwd = Path.cwd().resolve()
     while not cwd.joinpath(".euler").is_dir():
         if cwd.as_posix() == "/":
-            message = f"Could not find .euler/euler.toml in {Path.cwd().resolve()} or any parent directory"
-            raise MissingProjectRootError(message)
+            raise MissingProjectRootError(cwd)
         cwd = cwd.parent
     return cwd
 
@@ -273,15 +276,14 @@ def get_statement(problem: Problem) -> dict[str, Any]:
 
 
 def get_settings() -> dict[str, Any]:
-    data = ConfigParser([_get_settings()]).data
+    settings = _get_settings()
+    data = ConfigParser([settings]).data
     version_string = data.get("$meta", {}).get("version")
     if version_string is None:
-        msg = "This `euler.toml` is missing a version"
-        raise RuntimeError(msg)
+        raise MissingVersionError(settings)
     min_version = Version.from_string(data["$meta"]["version"])
     if min_version > Version.from_string(__version__):
-        msg = f"This `euler.toml` requires an eulertools >= v{min_version}"
-        raise RuntimeError(msg)
+        raise InvalidVersionError(settings, str(min_version))
     return data
 
 
@@ -370,8 +372,7 @@ def get_all_problems(languages: set[str]) -> dict[str, Problem]:
         statement = get_config(file)
         if any(statement.get(language) is not None for language in languages):
             if problem.id in output:
-                msg = f"Duplicate problem id: {problem.id}"
-                raise ValueError(msg)
+                raise DuplicateProblemError(problem.id)
             output[problem.id] = problem
 
     return output
@@ -384,11 +385,15 @@ def _filter_languages(parsed_languages: set[str]) -> Iterator[Language]:
         return
 
     language_names = {language.name for language in all_languages}
+    exceptions = []
     for language in parsed_languages:
-        if language not in language_names:
-            msg = f"{language} is not a valid language"
-            raise InvalidLanguageError(msg)
-        yield Language.from_settings(language)
+        if language in language_names:
+            yield Language.from_settings(language)
+        else:
+            exceptions.append(InvalidLanguageError(language))
+    if exceptions:
+        msg = "Not all languages could be parsed"
+        raise ExceptionGroup(msg, exceptions)
 
 
 def _filter_problems(
@@ -399,15 +404,15 @@ def _filter_problems(
         yield from all_problems.values()
         return
 
+    exceptions = []
     for problem in parsed_problems:
-        if problem not in all_problems:
-            if not parsed_languages:
-                language_names = "any language"
-            else:
-                language_names = ", ".join(parsed_languages)
-            msg = f"{problem} is not a valid problem for {language_names}"
-            raise InvalidProblemError(msg)
-        yield all_problems[problem]
+        if problem in all_problems:
+            yield all_problems[problem]
+        else:
+            exceptions.append(InvalidProblemError(problem, parsed_languages))
+    if exceptions:
+        msg = "Not all problems could be parsed"
+        raise ExceptionGroup(msg, exceptions)
 
 
 def filter_languages(languages: set[str]) -> list[Language]:
