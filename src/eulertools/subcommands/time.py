@@ -132,10 +132,12 @@ class Time:
             if case_result in {
                 CaseResult.MISSING_KEY,
                 CaseResult.NON_DETERMINISTIC,
+                CaseResult.WRONG_RESPONSE,
+                CaseResult.NEW_RESPONSE,
             }:
                 continue
             if (
-                case_result in {CaseResult.SUCCESS, CaseResult.WRONG_RESPONSE}
+                case_summary.timings.get(language)
                 and self.update_mode == UpdateMode.APPEND
             ):
                 continue
