@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 -   Added a way to print debugging lines
 -   Added a way to pass arguments to the runner
+-   Added the ability to add multiple hints as an array
 
 ### Fixed
 

@@ -14,7 +14,7 @@ def test_statement_with_title_and_hint(
     problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {
-        "common": {"title": "Title", "description": "Desc", "hint": "Hint"}
+        "common": {"title": "Title", "description": "Desc", "hints": ["Hint"]}
     }
     statement_command = Statement(problems=problems[:1], show_hints=True)
 
@@ -25,8 +25,8 @@ def test_statement_with_title_and_hint(
         mock.call("~~~~~"),
         mock.call("Desc"),
         mock.call(),
-        mock.call("Hint for Title"),
-        mock.call("~~~~~~~~~~~~~~"),
+        mock.call("Hints for `Title`"),
+        mock.call("~~~~~~~~~~~~~~~~~"),
         mock.call("Hint"),
         mock.call(),
     ]
@@ -68,7 +68,7 @@ def test_statement_without_title_but_with_hint(
     problems: list[Problem],
 ) -> None:
     mock_get_statement.return_value = {
-        "common": {"description": "Desc", "hint": "Hint"}
+        "common": {"description": "Desc", "hints": ["Hint"]}
     }
     statement_command = Statement(problems=problems[:1], show_hints=True)
 
@@ -79,8 +79,8 @@ def test_statement_without_title_but_with_hint(
         mock.call("~~~~~"),
         mock.call("Desc"),
         mock.call(),
-        mock.call("Hint for p0001"),
-        mock.call("~~~~~~~~~~~~~~"),
+        mock.call("Hints for `p0001`"),
+        mock.call("~~~~~~~~~~~~~~~~~"),
         mock.call("Hint"),
         mock.call(),
     ]

@@ -20,10 +20,16 @@ class Statement:
         self._print_title(title, sgr_codes=[SGRCodes.GREEN])
         print(statement["description"].strip())
         print()
-        if self.show_hints and (hint := statement.get("hint")):
-            self._print_title(f"Hint for {title}", sgr_codes=[SGRCodes.BLUE])
-            print(hint.strip())
-            print()
+        if self.show_hints:
+            if hint := statement.get("hint"):
+                self._print_title(f"Hint for `{title}`", sgr_codes=[SGRCodes.BLUE])
+                print(hint.strip())
+                print()
+            elif hints := statement.get("hints"):
+                self._print_title(f"Hints for `{title}`", sgr_codes=[SGRCodes.BLUE])
+                for hint in hints:
+                    print(hint.strip())
+                print()
 
     @staticmethod
     def _print_title(title: str, sgr_codes: list[SGRCodes]) -> None:
