@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-06-18
+
 ### Added
 
 -   Added a way to print debugging lines
@@ -173,7 +175,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/spapanik/eulertools/compare/v4.0.1...main
+[Unreleased]: https://github.com/spapanik/eulertools/compare/v4.1.0...main
+[4.1.0]: https://github.com/spapanik/eulertools/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/spapanik/eulertools/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/spapanik/eulertools/compare/v3.0.1...v4.0.0
 [3.0.1]: https://github.com/spapanik/eulertools/compare/v3.0.0...v3.0.1
