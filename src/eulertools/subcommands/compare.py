@@ -13,7 +13,7 @@ class Compare:
         "pad_length",
     )
 
-    def __init__(self, languages: list[Language], problems: list[Problem]):
+    def __init__(self, languages: list[Language], problems: list[Problem]) -> None:
         self.languages = languages
         self.problems = problems
 

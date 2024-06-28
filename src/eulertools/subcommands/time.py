@@ -26,7 +26,7 @@ class Time:
         verbosity: int,
         update_mode: UpdateMode,
         extra: Sequence[str] = (),
-    ):
+    ) -> None:
         self.success = True
         self.languages = languages
         self.problems = problems

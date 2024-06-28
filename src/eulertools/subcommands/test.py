@@ -23,7 +23,7 @@ class Test:
         times: int,
         verbosity: int,
         extra: Sequence[str] = (),
-    ):
+    ) -> None:
         self.success = True
         self.languages = languages
         self.problems = problems

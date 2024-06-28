@@ -6,7 +6,7 @@ from eulertools.lib.utils import Problem, get_statement
 class Statement:
     __slots__ = ("problems", "show_hints")
 
-    def __init__(self, problems: list[Problem], *, show_hints: bool):
+    def __init__(self, problems: list[Problem], *, show_hints: bool) -> None:
         self.problems = problems
         self.show_hints = show_hints
 

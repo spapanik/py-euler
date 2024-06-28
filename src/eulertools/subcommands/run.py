@@ -37,7 +37,7 @@ class Run:
         times: int,
         update_mode: UpdateMode = UpdateMode.NONE,
         extra: Sequence[str] = (),
-    ):
+    ) -> None:
         self.success = True
         self.languages = languages
         self.problems = problems
@@ -73,8 +73,8 @@ class Run:
     def _run_single_problem(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
-        result = subprocess.run(  # noqa: PLW1510
-            [language.runner, problem.id, str(self.times), *self.extra],  # noqa: S603
+        result = subprocess.run(  # noqa: PLW1510, S603
+            [language.runner, problem.id, str(self.times), *self.extra],
             capture_output=True,
         )
         output = result.stdout.decode()

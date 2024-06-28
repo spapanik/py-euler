@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import csv
 import re
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
@@ -28,6 +27,9 @@ from eulertools.lib.exceptions import (
     MissingProjectRootError,
     MissingVersionError,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 @dataclass(frozen=True, slots=True, order=True)
