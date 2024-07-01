@@ -1,8 +1,71 @@
 [build-system]
 requires = [
-    "poetry_core>=1.0.0",
+    "phosphorus>=0.3",
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "phosphorus.construction.api"
+
+[project]
+name = "eulertools"
+dynamic = [
+    "version",
+]
+
+authors = [
+    { name = "Stephanos Kuma", email = "stephanos@kuma.ai" },
+]
+license = { text = "LGPLv3+" }
+
+readme = "docs/README.md"
+description = "Multilanguage competitive coding toolbox"
+keywords = [
+    "leetcode",
+    "topcoder",
+    "project_euler",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+]
+
+requires-python = "~=3.11"
+dependencies = [
+    "dj_settings~=5.0",
+    "jinja2~=3.1",
+    "pyutilkit~=0.4",
+]
+
+[project.urls]
+homepage = "https://eulertools.readthedocs.io/en/stable/"
+repository = "https://github.com/spapanik/eulertools"
+documentation = "https://eulertools.readthedocs.io/en/stable/"
+
+[project.scripts]
+euler = "eulertools.__main__:main"
+
+[tool.phosphorus.dev-dependencies]
+dev = [
+    "ipdb~=0.13",
+    "ipython~=8.21",
+]
+lint = [
+    "black~=24.1",
+    "mypy~=1.8",
+    "ruff~=0.5",
+]
+test = [
+    "pytest~=8.0",
+    "pytest-cov~=5.0",
+]
+docs = [
+    "mkdocs~=1.6",
+    "mkdocs-material~=9.5",
+    "mkdocs-material-extensions~=1.3",
+    "Pygments~=2.17",
+    "pymdown-extensions~=10.8",
+]
+
+[tool.phosphorus.dynamic]
+version = { file = "src/eulertools/__version__.py" }
 
 [tool.black]
 target-version = [
@@ -134,62 +197,3 @@ data_file = ".cov_cache/coverage.dat"
 show_missing = true
 skip_covered = true
 skip_empty = true
-
-[tool.poetry]
-name = "eulertools"
-version = "4.1.0"
-description = "Multilanguage competitive coding toolbox"
-authors = [
-    "Stephanos Kuma <stephanos@kuma.ai>",
-]
-
-license = "LGPL-3.0+"
-readme = "docs/README.md"
-
-homepage = "https://eulertools.readthedocs.io/en/stable/"
-repository = "https://github.com/spapanik/eulertools"
-documentation = "https://eulertools.readthedocs.io/en/stable/"
-
-keywords = [
-    "leetcode",
-    "topcoder",
-    "project_euler",
-]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Operating System :: OS Independent",
-]
-
-[tool.poetry.scripts]
-euler = "eulertools.__main__:main"
-
-[tool.poetry.dependencies]
-# python version
-python = "^3.11"
-
-# dependencies
-dj_settings = "^5.0"
-jinja2 = "^3.1"
-pyutilkit = "^0.4"
-
-[tool.poetry.group.dev.dependencies]
-ipdb = "^0.13"
-ipython = "^8.21"
-pickleshare = "^0.7"
-pipdeptree = "^2.13"
-
-[tool.poetry.group.lint.dependencies]
-black = "^24.1"
-mypy = "^1.8"
-ruff = "^0.5"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.0"
-pytest-cov = "^5.0"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6"
-mkdocs-material = "^9.5"
-mkdocs-material-extensions = "^1.3"
-Pygments = "^2.17"
-pymdown-extensions = "^10.8"
