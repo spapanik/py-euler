@@ -28,7 +28,7 @@ please view the detailed [Documentation].
 
 [test_badge]: https://github.com/spapanik/eulertools/actions/workflows/tests.yml/badge.svg
 [test_url]: https://github.com/spapanik/eulertools/actions/workflows/tests.yml
-[licence_badge]: https://img.shields.io/github/license/spapanik/eulertools
+[licence_badge]: https://img.shields.io/pypi/l/eulertools
 [licence_url]: https://github.com/spapanik/eulertools/blob/main/docs/LICENSE.md
 [pypi_badge]: https://img.shields.io/pypi/v/eulertools
 [pypi_url]: https://pypi.org/project/eulertools

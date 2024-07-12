@@ -13,7 +13,7 @@ dynamic = [
 authors = [
     { name = "Stephanos Kuma", email = "stephanos@kuma.ai" },
 ]
-license = { text = "LGPLv3+" }
+license = { text = "BSD-3-Clause" }
 
 readme = "docs/README.md"
 description = "Multilanguage competitive coding toolbox"
@@ -25,6 +25,8 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: BSD License",
 ]
 
 requires-python = "~=3.11"
