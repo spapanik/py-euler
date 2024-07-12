@@ -15,6 +15,9 @@ The problem name
 The project can be configured using a TOML file, called `euler.toml`,
 inside the `.euler` directory.
 
+Also, json and yaml file types are allowed, and the type is chosen from
+the suffix of the file.
+
 Each language is a section `[language.<language_name>]`, with the
 following fields:
 

@@ -41,15 +41,15 @@ class InvalidProblemError(ValueError):
 class InvalidVersionError(ValueError):
     __slots__ = ()
 
-    def __init__(self, settings: Path, min_version: str) -> None:
-        super().__init__(f"`{settings}` requires a eulertools >= v{min_version}")
+    def __init__(self, min_version: str) -> None:
+        super().__init__(f"The project requires a eulertools >= v{min_version}")
 
 
 class MissingProjectRootError(FileNotFoundError):
     __slots__ = ()
 
     def __init__(self, cwd: Path) -> None:
-        super().__init__("Couldn't find euler.toml")
+        super().__init__("Couldn't find a project root directory")
         self.__notes__ = list(
             chain(
                 ["Locations searched:"],
@@ -62,4 +62,11 @@ class MissingVersionError(ValueError):
     __slots__ = ()
 
     def __init__(self, settings: Path) -> None:
-        super().__init__(f"`{settings}` has no version info")
+        super().__init__(f"Config in `{settings}` has no version info")
+
+
+class ProblemNotFoundError(ValueError):
+    __slots__ = ()
+
+    def __init__(self, name: str) -> None:
+        super().__init__(f"Couldn't locate problem named `{name}`")

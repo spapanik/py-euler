@@ -16,6 +16,7 @@ from eulertools.lib.constants import (
     CASE_KEY,
     NULL_STRING,
     PROBLEM,
+    SUPPORTED_SUFFIXES,
     CaseResult,
     ParseResult,
 )
@@ -27,6 +28,7 @@ from eulertools.lib.exceptions import (
     InvalidVersionError,
     MissingProjectRootError,
     MissingVersionError,
+    ProblemNotFoundError,
 )
 
 if TYPE_CHECKING:
@@ -73,15 +75,23 @@ class Problem:
     @classmethod
     def from_name(cls, name: str) -> Self:
         statement_dir = _get_statements_dir()
-        path = Path(name).with_suffix(".toml")
+        base_path = statement_dir.joinpath(name)
+        for suffix in SUPPORTED_SUFFIXES:
+            path = base_path.with_suffix(suffix)
+            if path.exists():
+                break
+        else:
+            raise ProblemNotFoundError(name)
         file = statement_dir.joinpath(path)
         statement = get_config(file)
         id_ = statement["common"].get("id", path.with_suffix("").as_posix())
         return cls(id=id_, name=name, statement=file)
 
-    @property
-    def path(self) -> Path:
-        return Path(self.name).with_suffix(".toml")
+    @classmethod
+    def from_path(cls, path: Path, base_dir: Path) -> Self:
+        relative_path = path.relative_to(base_dir)
+        name = relative_path.with_suffix("").as_posix()
+        return cls.from_name(name)
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -199,10 +209,6 @@ def _get_settings_root() -> Path:
     return _get_project_root().joinpath(".euler")
 
 
-def _get_settings() -> Path:
-    return _get_settings_root().joinpath("euler.toml")
-
-
 def _get_txt_summary() -> Summary:
     summary = Summary(problems={})
     answers = _get_settings_root().joinpath("answers.txt")
@@ -287,7 +293,7 @@ def get_template(language: Language) -> Path:
 
 
 def get_solution(language: Language, problem: Problem) -> Path:
-    return language.solutions_path.joinpath(problem.path).with_suffix(language.suffix)
+    return language.solutions_path.joinpath(problem.name).with_suffix(language.suffix)
 
 
 def get_config(path: Path) -> dict[str, Any]:
@@ -299,14 +305,16 @@ def get_statement(problem: Problem) -> dict[str, Any]:
 
 
 def get_settings() -> dict[str, Any]:
-    settings = _get_settings()
-    data = ConfigParser([settings]).data
+    settings_root = _get_settings_root()
+    base_path = _get_settings_root().joinpath("euler")
+    settings = [base_path.with_suffix(suffix) for suffix in SUPPORTED_SUFFIXES]
+    data = ConfigParser(settings).data
     version_string = data.get("$meta", {}).get("version")
     if version_string is None:
-        raise MissingVersionError(settings)
+        raise MissingVersionError(settings_root)
     min_version = Version.from_string(data["$meta"]["version"])
     if min_version > Version.from_string(__version__):
-        raise InvalidVersionError(settings, str(min_version))
+        raise InvalidVersionError(str(min_version))
     return data
 
 
@@ -331,9 +339,7 @@ def get_summary() -> Summary:
     for results_file in results_dir.rglob("*.yaml"):
         with results_file.open() as file:
             data = yaml.safe_load(file)
-        problem = Problem.from_name(
-            results_file.relative_to(results_dir).with_suffix("").as_posix()
-        )
+        problem = Problem.from_path(results_file, results_dir)
         problem_summary = summary.get_or_create_problem(problem)
         for case_key, case_info in data.items():
             case_id = CaseId(problem=problem, case_key=case_key)
@@ -384,9 +390,7 @@ def get_all_problems(languages: set[str]) -> dict[str, Problem]:
     for file in sorted(statement_dir.rglob("*")):
         if not file.is_file():
             continue
-        path = file.relative_to(statement_dir)
-        name = path.with_suffix("").as_posix()
-        problem = Problem.from_name(name)
+        problem = Problem.from_path(file, statement_dir)
         statement = get_config(file)
         if any(statement.get(language) is not None for language in languages):
             if problem.id in output:

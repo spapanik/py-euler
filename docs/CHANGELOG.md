@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+-   Support json and yaml files for statements and general configuration
+
 ### Changed
 
 -   Changed license to BSD 3-Clause

@@ -6,6 +6,7 @@ PROBLEM = "problem"
 CASE_KEY = "case_key"
 MISSING = "N/A"
 NULL_STRING = "(null)"
+SUPPORTED_SUFFIXES = [".yaml", ".yml", ".toml", ".json"]
 TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 
 
