@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
+import yaml
 from dj_settings import ConfigParser
 from pyutilkit.timing import Timing
 
@@ -100,12 +101,6 @@ class Summary:
             self.problems[problem] = problem_summary
         return problem_summary
 
-    def for_csv(self) -> list[dict[str, str]]:
-        return sorted(
-            (case for problem in self.problems.values() for case in problem.for_csv()),
-            key=lambda case: (case[PROBLEM], case[CASE_KEY]),
-        )
-
     def success(self, language: Language, problem: Problem) -> bool:
         problem_summary = self.problems.get(problem)
         if problem_summary is None:
@@ -127,8 +122,12 @@ class ProblemSummary:
             self.cases[case_id] = case_summary
         return case_summary
 
-    def for_csv(self) -> list[dict[str, str]]:
-        return [case.for_csv() for case in self.cases.values()]
+    def as_dict(self) -> dict[str, dict[str, str | int]]:
+        return {
+            key: value
+            for case in self.cases.values()
+            for key, value in case.as_dict().items()
+        }
 
     def success(self, language: Language) -> bool:
         if self.result.get(language) == ParseResult.FAILURE:
@@ -145,18 +144,18 @@ class CaseSummary:
     new_timings: dict[Language, list[Timing]] = field(default_factory=dict, repr=False)
     new_answers: dict[Language, set[str]] = field(default_factory=dict, repr=False)
 
-    def for_csv(self) -> dict[str, str]:
+    def as_dict(self) -> dict[str, dict[str, str | int]]:
         if self.answer is None:
             info = [f"Case {self.case_id.case_key} has no answer"]
             raise InternalError(info)
         return {
-            PROBLEM: self.case_id.problem.name,
-            CASE_KEY: self.case_id.case_key,
-            ANSWER: self.answer,
-            **{
-                language.name: str(timing.nanoseconds)
-                for language, timing in self.timings.items()
-            },
+            self.case_id.case_key: {
+                ANSWER: self.answer,
+                **{
+                    language.name: timing.nanoseconds
+                    for language, timing in self.timings.items()
+                },
+            }
         }
 
     def success(self, language: Language) -> bool:
@@ -204,7 +203,7 @@ def _get_settings() -> Path:
     return _get_settings_root().joinpath("euler.toml")
 
 
-def _get_legacy_summary() -> Summary:
+def _get_txt_summary() -> Summary:
     summary = Summary(problems={})
     answers = _get_settings_root().joinpath("answers.txt")
     with answers.open() as file:
@@ -231,20 +230,42 @@ def _get_legacy_summary() -> Summary:
     return summary
 
 
+def _get_csv_summary() -> Summary:
+    summary = Summary(problems={})
+    results_file = _get_settings_root().joinpath("results.csv")
+    languages = get_all_languages()
+    with results_file.open() as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            problem = Problem.from_name(row[PROBLEM])
+            problem_summary = summary.get_or_create_problem(problem)
+            case_id = CaseId(problem=problem, case_key=row[CASE_KEY])
+            case_summary = problem_summary.get_or_create_case(case_id)
+            case_summary.answer = row[ANSWER]
+            for language in languages:
+                timing = row.get(language.name, NULL_STRING)
+                if timing != NULL_STRING:
+                    case_summary.timings[language] = Timing(nanoseconds=int(timing))
+    results_file.unlink()
+    return summary
+
+
 def _create_summary(file: Path) -> None:
-    file.touch(mode=0o644)
+    file.mkdir()
     if _get_settings_root().joinpath("answers.txt").exists():
-        summary = _get_legacy_summary()
+        summary = _get_txt_summary()
+    if _get_settings_root().joinpath("results.csv").exists():
+        summary = _get_csv_summary()
     else:
         summary = Summary(problems={})
     update_summary(summary)
 
 
 def _get_summary() -> Path:
-    file = _get_settings_root().joinpath("results.csv")
-    if not file.exists():
-        _create_summary(file)
-    return file
+    directory = _get_settings_root().joinpath("results")
+    if not directory.exists():
+        _create_summary(directory)
+    return directory
 
 
 def _get_statements_dir() -> Path:
@@ -304,19 +325,22 @@ def parse_answer_result(line: str) -> tuple[str, str, str]:
 
 
 def get_summary() -> Summary:
-    results_file = _get_summary()
+    results_dir = _get_summary()
     languages = get_all_languages()
     summary = Summary(problems={})
-    with results_file.open() as file:
-        csv_reader = csv.DictReader(file)
-        for row in csv_reader:
-            problem = Problem.from_name(row[PROBLEM])
-            problem_summary = summary.get_or_create_problem(problem)
-            case_id = CaseId(problem=problem, case_key=row[CASE_KEY])
+    for results_file in results_dir.rglob("*.yaml"):
+        with results_file.open() as file:
+            data = yaml.safe_load(file)
+        problem = Problem.from_name(
+            results_file.relative_to(results_dir).with_suffix("").as_posix()
+        )
+        problem_summary = summary.get_or_create_problem(problem)
+        for case_key, case_info in data.items():
+            case_id = CaseId(problem=problem, case_key=case_key)
             case_summary = problem_summary.get_or_create_case(case_id)
-            case_summary.answer = row[ANSWER]
+            case_summary.answer = case_info[ANSWER]
             for language in languages:
-                timing = row.get(language.name, NULL_STRING)
+                timing = case_info.get(language.name, NULL_STRING)
                 if timing != NULL_STRING:
                     case_summary.timings[language] = Timing(nanoseconds=int(timing))
     return summary
@@ -330,20 +354,12 @@ def get_context(language: Language, problem: Problem) -> dict[str, str]:
 
 
 def update_summary(summary: Summary) -> None:
-    fieldnames = [
-        PROBLEM,
-        CASE_KEY,
-        ANSWER,
-        *(language.name for language in get_all_languages()),
-    ]
-    results_file = _get_summary()
-    with results_file.open("w") as file:
-        writer = csv.DictWriter(
-            file, fieldnames=fieldnames, restval=NULL_STRING, lineterminator="\n"
-        )
-        writer.writeheader()
-        for csv_dict in summary.for_csv():
-            writer.writerow(csv_dict)
+    results_dir = _get_summary()
+    for problem, problem_summary in summary.problems.items():
+        results_file = results_dir.joinpath(f"{problem.name}.yaml")
+        results_file.parent.mkdir(parents=True, exist_ok=True)
+        with results_file.open("w+") as file:
+            yaml.dump(problem_summary.as_dict(), file)
 
 
 def get_average(values: list[Timing]) -> Timing:
