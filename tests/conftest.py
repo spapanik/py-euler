@@ -9,7 +9,7 @@ from eulertools.lib.utils import CaseId, Language, Problem, Summary
 DEV_NULL = Path(os.devnull)
 
 
-@pytest.fixture()
+@pytest.fixture
 def problems() -> list[Problem]:
     return [
         Problem(id="1", name="p0001", statement=DEV_NULL),
@@ -17,7 +17,7 @@ def problems() -> list[Problem]:
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def languages() -> list[Language]:
     return [
         Language(
@@ -39,7 +39,7 @@ def languages() -> list[Language]:
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def summary(problems: list[Problem], languages: list[Language]) -> Summary:
     problem_1 = problems[0]
     problem_42 = problems[1]
@@ -63,6 +63,6 @@ def summary(problems: list[Problem], languages: list[Language]) -> Summary:
     return summary
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_dir() -> Path:
     return Path(__file__).parent.joinpath("data")
