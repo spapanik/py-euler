@@ -49,10 +49,14 @@ class Language:
         project_root = _get_project_root()
         settings = get_settings()
         project_settings_root = _get_settings_root()
+        common = settings["languages"].get("$common", {})
         language = settings["languages"][name]
         relative_path = language.get("path", name)
         path = project_root.joinpath(relative_path)
-        runner = path.joinpath(language["runner"])
+        if common_runner := common.get("runner"):
+            runner = project_root.joinpath(common_runner)
+        else:
+            runner = path.joinpath(language["runner"])
         runner_args = language.get("runner_args", [])
         solutions = language.get("solutions", "src/solutions")
         settings_path = project_settings_root.joinpath(relative_path)
@@ -380,7 +384,11 @@ def get_average(values: list[Timing]) -> Timing:
 
 def get_all_languages() -> list[Language]:
     languages = get_settings()["languages"]
-    return sorted(Language.from_settings(language) for language in languages)
+    return sorted(
+        Language.from_settings(language)
+        for language in languages
+        if language != "$common"
+    )
 
 
 def get_all_problems(languages: set[str]) -> dict[str, Problem]:
