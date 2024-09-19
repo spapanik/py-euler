@@ -74,7 +74,7 @@ class Run:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
         result = subprocess.run(  # noqa: PLW1510, S603
-            [language.runner, problem.id, str(self.times), *self.extra],
+            [*language.runner, problem.id, str(self.times), *self.extra],
             capture_output=True,
         )
         output = result.stdout.decode()

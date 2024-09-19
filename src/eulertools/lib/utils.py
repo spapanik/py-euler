@@ -42,7 +42,7 @@ class Language:
     path: Path = field(repr=False, compare=False)
     solutions_path: Path = field(repr=False, compare=False)
     settings_path: Path = field(repr=False, compare=False)
-    runner: Path = field(repr=False, compare=False)
+    runner: list[Path | str] = field(repr=False, compare=False)
 
     @classmethod
     def from_settings(cls, name: str) -> Self:
@@ -52,6 +52,8 @@ class Language:
         language = settings["languages"][name]
         relative_path = language.get("path", name)
         path = project_root.joinpath(relative_path)
+        runner = path.joinpath(language["runner"])
+        runner_args = language.get("runner_args", [])
         solutions = language.get("solutions", "src/solutions")
         settings_path = project_settings_root.joinpath(relative_path)
         extension = language.get("extension", name)
@@ -60,7 +62,7 @@ class Language:
             name=name,
             suffix=suffix,
             path=path,
-            runner=path.joinpath(language["runner"]),
+            runner=[runner, *runner_args],
             solutions_path=path.joinpath(solutions),
             settings_path=settings_path,
         )

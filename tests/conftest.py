@@ -26,7 +26,7 @@ def languages() -> list[Language]:
             path=DEV_NULL,
             solutions_path=DEV_NULL,
             settings_path=DEV_NULL,
-            runner=DEV_NULL,
+            runner=[DEV_NULL],
         ),
         Language(
             name="python",
@@ -34,7 +34,7 @@ def languages() -> list[Language]:
             path=DEV_NULL,
             solutions_path=DEV_NULL,
             settings_path=DEV_NULL,
-            runner=DEV_NULL,
+            runner=[DEV_NULL],
         ),
     ]
 

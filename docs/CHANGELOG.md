@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+-   Support passing extra arguments to the runner
+
 ## [5.0.0] - 2024-07-12
 
 ### Added
