@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Changed
+
+-   Changed the name of the template dir
+
 ## [5.1.0] - 2024-09-19
 
 ### Added

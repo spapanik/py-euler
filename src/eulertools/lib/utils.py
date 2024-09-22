@@ -290,12 +290,17 @@ def _get_templates_dir() -> Path:
 
 def get_template(language: Language) -> Path:
     template_dir = _get_templates_dir()
-    new_path = template_dir.joinpath(f"{language.name}.jinja")
-    if not new_path.exists():
-        template_dir.mkdir(parents=True, exist_ok=True)
-        old_path = language.settings_path.joinpath("solution.jinja")
-        old_path.rename(new_path)
-    return new_path
+    suffix = f"{language.suffix}.jinja"
+    newest_path = template_dir.joinpath("solution").with_suffix(suffix)
+    if not newest_path.exists():
+        new_path = template_dir.joinpath(f"{language.name}.jinja")
+        if new_path.exists():
+            new_path.rename(newest_path)
+        else:
+            template_dir.mkdir(parents=True, exist_ok=True)
+            old_path = language.settings_path.joinpath("solution.jinja")
+            old_path.rename(new_path)
+    return newest_path
 
 
 def get_solution(language: Language, problem: Problem) -> Path:
