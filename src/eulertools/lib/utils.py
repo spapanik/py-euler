@@ -36,28 +36,45 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True, order=True)
+class Runner:
+    path: Path
+    args: tuple[str, ...]
+    use_ids: bool = field(repr=False, compare=False)
+
+    @classmethod
+    def from_settings(cls, name: str) -> Self:
+        project_root = _get_project_root()
+        settings = get_settings()
+        common = settings["languages"].get("$common", {})
+        language = settings["languages"][name]
+        relative_path = language.get("path", name)
+        path = project_root.joinpath(relative_path)
+        if common_runner := common.get("runner"):
+            runner_path = project_root.joinpath(common_runner)
+        else:
+            runner_path = path.joinpath(language["runner"])
+        runner_args = language.get("runner_args", [])
+        use_ids = common.get("use_ids", True)
+        return cls(path=runner_path, args=runner_args, use_ids=use_ids)
+
+
+@dataclass(frozen=True, slots=True, order=True)
 class Language:
     name: str
     suffix: str = field(repr=False, compare=False)
     path: Path = field(repr=False, compare=False)
     solutions_path: Path = field(repr=False, compare=False)
     settings_path: Path = field(repr=False, compare=False)
-    runner: list[Path | str] = field(repr=False, compare=False)
+    runner: Runner = field(repr=False, compare=False)
 
     @classmethod
     def from_settings(cls, name: str) -> Self:
         project_root = _get_project_root()
         settings = get_settings()
         project_settings_root = _get_settings_root()
-        common = settings["languages"].get("$common", {})
         language = settings["languages"][name]
         relative_path = language.get("path", name)
         path = project_root.joinpath(relative_path)
-        if common_runner := common.get("runner"):
-            runner = project_root.joinpath(common_runner)
-        else:
-            runner = path.joinpath(language["runner"])
-        runner_args = language.get("runner_args", [])
         solutions = language.get("solutions", "src/solutions")
         settings_path = project_settings_root.joinpath(relative_path)
         extension = language.get("extension", name)
@@ -66,7 +83,7 @@ class Language:
             name=name,
             suffix=suffix,
             path=path,
-            runner=[runner, *runner_args],
+            runner=Runner.from_settings(name),
             solutions_path=path.joinpath(solutions),
             settings_path=settings_path,
         )

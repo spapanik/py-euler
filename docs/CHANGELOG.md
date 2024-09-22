@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+-   Added the ability to use names in the runner
+
 ### Changed
 
 -   Changed the name of the template dir

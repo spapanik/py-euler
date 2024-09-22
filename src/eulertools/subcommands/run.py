@@ -73,8 +73,10 @@ class Run:
     def _run_single_problem(self, language: Language, problem: Problem) -> None:
         problem_summary = self.summary.get_or_create_problem(problem)
         problem_summary.result[language] = ParseResult.SUCCESS
+        runner = language.runner
+        problem_arg = problem.id if runner.use_ids else problem.name
         result = subprocess.run(  # noqa: PLW1510, S603
-            [*language.runner, problem.id, str(self.times), *self.extra],
+            [runner.path, *runner.args, problem_arg, str(self.times), *self.extra],
             capture_output=True,
         )
         output = result.stdout.decode()
