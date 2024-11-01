@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 import sys
 from collections.abc import Iterator, Sequence
@@ -86,6 +87,17 @@ class Run:
             case NamedArgType.LONG:
                 problem_args = ["--problem", problem_arg]
                 time_args = ["--times", times_arg]
+        if self.verbosity > 3:  # noqa: PLR2004
+            command = shlex.join(
+                [
+                    runner.path.as_posix(),
+                    *runner.args,
+                    *problem_args,
+                    *time_args,
+                    *self.extra,
+                ]
+            )
+            print("🔍 Running command:", command)
         result = subprocess.run(  # noqa: PLW1510, S603
             [runner.path, *runner.args, *problem_args, *time_args, *self.extra],
             capture_output=True,
