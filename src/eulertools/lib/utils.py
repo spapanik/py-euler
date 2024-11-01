@@ -18,6 +18,7 @@ from eulertools.lib.constants import (
     PROBLEM,
     SUPPORTED_SUFFIXES,
     CaseResult,
+    NamedArgType,
     ParseResult,
 )
 from eulertools.lib.exceptions import (
@@ -40,6 +41,7 @@ class Runner:
     path: Path
     args: tuple[str, ...]
     use_ids: bool = field(repr=False, compare=False)
+    named_arg_type: NamedArgType = field(repr=False, compare=False)
 
     @classmethod
     def from_settings(cls, name: str) -> Self:
@@ -55,7 +57,17 @@ class Runner:
             runner_path = path.joinpath(language["runner"])
         runner_args = language.get("runner_args", [])
         use_ids = common.get("use_ids", True)
-        return cls(path=runner_path, args=runner_args, use_ids=use_ids)
+        named_args = common.get("named_arg_type", "none").lower()
+        try:
+            named_arg_type = NamedArgType[named_args.upper()]
+        except KeyError:
+            named_arg_type = NamedArgType.NONE
+        return cls(
+            path=runner_path,
+            args=runner_args,
+            use_ids=use_ids,
+            named_arg_type=named_arg_type,
+        )
 
 
 @dataclass(frozen=True, slots=True, order=True)

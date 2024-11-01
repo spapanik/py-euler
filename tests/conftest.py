@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from pyutilkit.timing import Timing
 
+from eulertools.lib.constants import NamedArgType
 from eulertools.lib.utils import CaseId, Language, Problem, Runner, Summary
 
 DEV_NULL = Path(os.devnull)
@@ -19,7 +20,9 @@ def problems() -> list[Problem]:
 
 @pytest.fixture
 def languages() -> list[Language]:
-    runner = Runner(path=DEV_NULL, args=(), use_ids=True)
+    runner = Runner(
+        path=DEV_NULL, args=(), use_ids=True, named_arg_type=NamedArgType.NONE
+    )
     return [
         Language(
             name="c",

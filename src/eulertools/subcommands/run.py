@@ -3,7 +3,7 @@ import sys
 from collections.abc import Iterator, Sequence
 from itertools import product
 
-from eulertools.lib.constants import CaseResult, ParseResult, UpdateMode
+from eulertools.lib.constants import CaseResult, NamedArgType, ParseResult, UpdateMode
 from eulertools.lib.utils import (
     CaseId,
     Language,
@@ -75,8 +75,19 @@ class Run:
         problem_summary.result[language] = ParseResult.SUCCESS
         runner = language.runner
         problem_arg = problem.id if runner.use_ids else problem.name
+        times_arg = str(self.times)
+        match runner.named_arg_type:
+            case NamedArgType.NONE:
+                problem_args = [problem_arg]
+                time_args = [times_arg]
+            case NamedArgType.SHORT:
+                problem_args = ["-p", problem_arg]
+                time_args = ["-t", times_arg]
+            case NamedArgType.LONG:
+                problem_args = ["--problem", problem_arg]
+                time_args = ["--times", times_arg]
         result = subprocess.run(  # noqa: PLW1510, S603
-            [runner.path, *runner.args, problem_arg, str(self.times), *self.extra],
+            [runner.path, *runner.args, *problem_args, *time_args, *self.extra],
             capture_output=True,
         )
         output = result.stdout.decode()

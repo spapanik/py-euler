@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+-   Added the ability to use named args in the runner
+
 ## [5.2.0] - 2024-09-22
 
 ### Added

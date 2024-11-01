@@ -11,6 +11,13 @@ TIME_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s?(.{0,2})")
 
 
 @unique
+class NamedArgType(StrEnum):
+    NONE = auto()
+    SHORT = auto()
+    LONG = auto()
+
+
+@unique
 class UpdateMode(StrEnum):
     NONE = auto()
     APPEND = auto()
