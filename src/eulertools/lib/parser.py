@@ -8,6 +8,10 @@ from eulertools.lib.utils import filter_languages, filter_problems
 sys.tracebacklimit = 0
 
 
+def runner_specific(parser: ArgumentParser, default_times: int) -> None:
+    parser.add_argument("-t", "--times", type=int, default=default_times)
+
+
 def language_specific(parser: ArgumentParser) -> None:
     parser.add_argument("-l", "--language", nargs="*", dest="languages", default=[])
 
@@ -60,13 +64,13 @@ def parse_args() -> Namespace:
     problem_specific(generate_parser)
 
     run_parser = subparsers.add_parser("run", parents=[parent_parser])
-    run_parser.add_argument("-t", "--times", type=int, default=1)
+    runner_specific(run_parser, default_times=1)
     can_be_updated(run_parser)
     language_specific(run_parser)
     problem_specific(run_parser)
 
     time_parser = subparsers.add_parser("time", parents=[parent_parser])
-    time_parser.add_argument("-t", "--times", type=int, default=10)
+    runner_specific(time_parser, default_times=10)
     can_be_updated(time_parser)
     language_specific(time_parser)
     problem_specific(time_parser)
@@ -76,7 +80,7 @@ def parse_args() -> Namespace:
     problem_specific(compare_parser)
 
     test_parser = subparsers.add_parser("test", parents=[parent_parser])
-    test_parser.add_argument("-t", "--times", type=int, default=2)
+    runner_specific(test_parser, default_times=2)
     language_specific(test_parser)
     problem_specific(test_parser)
 
